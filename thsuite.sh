@@ -1027,12 +1027,12 @@ read UPD1
 	if [[ "$UPD1" == "y" || "$UPD1" == "Y" ]] ; then 
 		echo $GRN">$STD Downloading latest version.."
 		wget -q http://thsuite.googlecode.com/svn/thsuite.sh -O $LOC/thsuite.tmp
-		chmod +x $LOC/mcfib.tmp
+		chmod +x $LOC/thsuite.tmp
 		mv $LOC/thsuite.tmp $LOC/thsuite.sh
 		echo $STD""
-		echo $GRN">$STD Latest thsuite.sh version has been saved to $GRN$LOC/mcfib.sh$STD"
+		echo $GRN">$STD Latest thsuite.sh version has been saved to $GRN$LOC/thsuite.sh$STD"
 		#tail -n 30 $LOC/thsuite.sh | sed -n "/$VERS/,\$p"
-		echo $GRN">$STD Please restart$GRN mcfib.sh$STD"
+		echo $GRN">$STD Please restart$GRN thsuite.sh$STD"
 		f_exit
 		else
 		f_exit
