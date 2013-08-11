@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 00:30
+#Last edit 12-08-2013 01:00
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #
@@ -667,7 +667,7 @@ cat $i | sed -e '0,/Station MAC/d' -e '$d' > /root/THS_TMP/csvfile_cl.tmp
 done
 echo $GRN">$STD Sorting and removing duplicates"
 cat /root/THS_TMP/ssid_list.tmp | sort | uniq > "$SAVEDIR"SSIDs"$FILEDATE".txt
-FILENAME="$SAVEDIR"ALLSSIDs"$FILEDATE".txt
+FILENAME="$SAVEDIR"SSIDs"$FILEDATE".txt
 sed -i '1d' $FILENAME
 echo $GRN">$STD SSID wordlist $GRN$FILENAME$STD created"
 else
@@ -1131,8 +1131,8 @@ wget -q --tries=10 --timeout=5 http://www.google.com -O /tmp/index.google &> /de
 	f_exit
 	fi
 echo $GRN">$STD Getting info on latest available version.."
-NEW_VERS=$(curl -s http://thsuite.googlecode.com/svn/thsuite.sh | sed -n 3p | cut -c 11-14)
-NEW_LED=$(curl -s http://thsuite.googlecode.com/svn/thsuite.sh | sed -n 5p | cut -d " " -f 3)
+NEW_VERS=$(curl -s http://thsuite.googlecode.com/svn/thsuite.sh | sed -n 3p | awk '{print $2}')
+NEW_LED=$(curl -s http://thsuite.googlecode.com/svn/thsuite.sh | sed -n 5p | awk '{print $3}')
 echo $GRN">$STD Checking if latest version in use.."
 if [ "$VERS" != "$NEW_VERS" ] ; then
 echo $RED">$STD Version in use is $RED$VERS$STD last edited on $LED"
