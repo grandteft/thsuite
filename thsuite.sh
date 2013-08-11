@@ -2,8 +2,9 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 10-08-2013 16:00
+#Last edit 11-08-2013 18:00
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
+#Tested with success on Kali Linux
 #
 ##
 ### FIXED SETTINGS
@@ -35,6 +36,9 @@ if [ -e /root/THS_TMP/handshake_list.tmp ] ; then rm /root/THS_TMP/handshake_lis
 if [ -e /root/THS_TMP/pyrit_cap_analyze.tmp ] ; then rm /root/THS_TMP/pyrit_cap_analyze.tmp ; fi
 if [ -e /root/THS_TMP/csvfile_ap.tmp ] ; then rm /root/THS_TMP/csvfile_ap.tmp ; fi
 if [ -e /root/THS_TMP/csvfile_cl.tmp ] ; then rm /root/THS_TMP/csvfile_cl.tmp ; fi
+if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
+if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
+if [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp ; fi
 echo $STD""
 exit 0
 }
@@ -507,27 +511,24 @@ f_menu
 f_list_wireless() {
 clear
 f_header
-echo $BLU">$STD View previous scans"
+echo $BLU">$STD THSuite scans / captures"
 if [ ! -d /root/THS_TMP/ ] ; then
 echo -e $RED"\n >> No previous THSuite scans detected <<"
 sleep 1.5
 f_menu
 fi
-FILES=$(ls /root/THS_TMP/*.cap | wc -l)
+FILES=$(ls /root/THS_TMP/*.csv | wc -l)
 if [ ! "$FILES" -gt 0 ] ; then 
-echo -e $RED"\n >> No captures found <<"
+echo -e $RED"\n >> No previous THSuite scans found <<"
 sleep 1.5
 f_menu
 fi
-echo $STD""
-echo $STD"Found capture files;$GRNN"
-ls -t /root/THS_TMP/*.cap | sed '/./=' | sed '/./N;s/\n/ /'
 echo $BLU"
 OPTIONS$STD
 1  View Access Points and clients/probes
-2  Check for WPA/WPA2 4-way handshakes
-3  Strip all SSIDs / Probes to wordlist
-4  Remove all listed files
+2  Check scans for WPA 4-way handshakes
+3  Strip ESSIDs / Probes to wordlist
+4  Remove listed files
 Q  Back to main menu
 "
 echo -ne $STD"Enter choice from above menu: $GRN"
@@ -548,12 +549,12 @@ read LISTW
 if [ "$LISTW" == "1" ] ; then
 clear
 f_header
-echo $BLU">$STD View APs and Clients/Probes info from captures$STD"
+echo $BLU">$STD View APs and Clients/Probes info from scan$STD"
 echo $STD""
-echo $STD"Found capture files;$GRNN"
-ls -t /root/THS_TMP/*.cap | sed '/./=' | sed '/./N;s/\n/ /'
+echo $STD"Found THSuite scans;$GRNN"
+ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 echo $STD""
-MAXNR=$(ls -l THS_TMP/*.cap | wc -l)
+MAXNR=$(ls -l THS_TMP/*.csv | grep -v kismet.csv | wc -l)
 echo -ne $GRN">$STD Choose file # from list to view network info: $GRN"
 read LISTNR
 if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
@@ -563,35 +564,34 @@ if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	read LISTNR
 	if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	done
-	FILEIN=$(ls -t /root/THS_TMP/*.cap | sed -n "$LISTNR p")
+	FILEIN=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed -n "$LISTNR p")
 f_parse_csv
 #
 # Option 2
-# Check captures for 4-way handshakes
+# Check scans for 4-way handshakes
 # -----------------------------------
 elif [ "$LISTW" == "2" ] ; then 
 clear
 f_header
-echo $BLU">$STD Check captures for 4-way handshakes"
+echo $BLU">$STD Check THSuite scans for 4-way handshakes"
 echo $STD""
-echo $STD"Found capture files;$GRNN"
-ls -t /root/THS_TMP/*.cap | sed '/./=' | sed '/./N;s/\n/ /'
+echo $STD"Found THSuite scans;$GRNN"
+ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 echo $STD""
-MAXNR=$(ls -l THS_TMP/*.cap | wc -l)
-echo -ne $GRN">$STD Choose file # from list to check for handshakes: $GRN"
+MAXNR=$(ls -l THS_TMP/*.csv | grep -v kismet.csv | wc -l)
+echo -ne $GRN">$STD Choose # from list to check scan for handshakes: $GRN"
 read LISTNR
 if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	while [[ ! "$LISTNR" =~ ^[1-$MAXNR]$ ]] ; do
 	echo $RED">$STD Input error $RED[$STD$LISTNR$RED]$TD Entry not in list"
-	echo -ne $GRN">$STD Choose file # from list to check for handshakes: $GRN"
+	echo -ne $GRN">$STD Choose # from list to check scan for handshakes: $GRN"
 	read LISTNR
 	if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	done
-	FILEIN=$(ls -t /root/THS_TMP/*.cap | sed -n "$LISTNR p")
-	CSVFILE=$(echo $FILEIN | sed 's/.cap/.csv/')
-
-echo $GRN">$STD Analyzing capture file $GRNN$FILEIN$STD"
-pyrit -r "$FILEIN" analyze  > /root/THS_TMP/pyrit_cap_analyze.tmp
+	CSVFILE=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed -n "$LISTNR p")
+	CAPFILE=$(echo $CSVFILE | sed 's/.csv/.cap/')
+echo $GRN">$STD Analyzing capture file $GRNN$CAPFILE$STD"
+pyrit -r "$CAPFILE" analyze  > /root/THS_TMP/pyrit_cap_analyze.tmp
 sed -i -e 's/^[ \t]*//' -e 's/ *$//' /root/THS_TMP/pyrit_cap_analyze.tmp
 
 while read line ; do 
@@ -633,12 +633,12 @@ f_list_wireless
 elif [ "$LISTW" == "3" ] ; then 
 clear
 f_header
-echo $BLU">$STD Strip ESSIDs and Probes to wordlist file$STD"
+echo $BLU">$STD Strip ESSIDs / Probes from THSuite scan(s) to wordlist $STD"
 echo $STD
-echo $STD"Found capture files;$GRNN"
-ls -t /root/THS_TMP/*.cap | sed '/./=' | sed '/./N;s/\n/ /'
+echo $STD"Found THSuite scans;$GRNN"
+ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 echo $STD""
-MAXNR=$(ls -l THS_TMP/*.cap | wc -l)
+MAXNR=$(ls -l THS_TMP/*.csv | grep -v kismet.csv | wc -l)
 echo -ne $GRN">$STD Choose file # from list to strip info from [A for all]: $GRN"
 read LISTNR
 if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
@@ -648,54 +648,95 @@ if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	read LISTNR
 	if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	done
+#
 if [[ $"LISTNR" == "a" || $"LISTNR" == "A" ]] ; then
-echo "ALl Files"
+echo "ALL Files"
+read
+f_menu
+#
 else
-if [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp ; fi
-FILEIN=$(ls -t /root/THS_TMP/*.cap | sed -n "$LISTNR p")
-CSVFILE=$(echo "$FILEIN" | sed 's/.cap/.csv/')
+FILEIN=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed -n "$LISTNR p")
 OUTFILE=$(date +"%Y%m%d-%H%M")
 #
 echo $GRN">$STD Stripping out ESSID and Probe information"
-for line in $(cat $CSVFILE | sed -e '0,/Station MAC/d') ; do 
+for line in $(cat $FILEIN | sed -e '0,/Station MAC/d') ; do 
 PROBE=$(echo $line | awk -F , '{print $7}' | sed 's/[ ]//')
-echo $PROBE >> /root/THS_TMP/ssid_list.tmp
+echo -e "\n$PROBE" >> /root/THS_TMP/ssid_list.tmp
+done
+for line in $(cat $FILEIN | sed -e '0,/Station MAC/d') ; do 
+SSID=$(cat $FILEIN | sed '0,/BSSID/d;/Station MAC/,$d' | cut -d , -f 14 | sed 's/[ ]//')
+echo -e "\n$SSID" >> /root/THS_TMP/ssid_list.tmp
 done
 echo $GRN">$STD Sorting and removing duplicates"
 cat /root/THS_TMP/ssid_list.tmp | sort | uniq > /root/THS_TMP/SSIDS-"$OUTFILE".txt
-echo $GRN">$STD SSID wordlist created$GRN ;"
-ls -t /root/THS_TMP/SSIDS-*.txt
+sed -i '/^$/d' /root/THS_TMP/SSIDS-"$OUTFILE".txt
+echo $GRN">$STD SSID wordlist created;$GRNN "
+ls -t /root/THS_TMP/SSIDS-*.txt | sed '/./=' | sed '/./N;s/\n/ /'
 fi
-if [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp ; fi
-echo -n $STD"WORK IN PROGRESS, Hit Enter to continue"
+echo -n $STD"
+Hit Enter to continue"
 read
 f_list_wireless
 #
 # Option 4
-# Remove all saved captures
-# -------------------------
+# Remove all saved THSuite scans
+# -------------------------------
 elif [ "$LISTW" == "4" ] ; then 
-	if [ ! "$(ls -A /root/THS_TMP/*.cap)" ] ; then 
-	echo -e $RED"\n>$STD No capture files found"
+	if [[ ! "$(ls -A /root/THS_TMP/*.csv)" && ! "$(ls -A /root/THS_TMP/*.cap)" ]] ; then 
+	echo -e $RED"\n>$STD No THSuite scans / captures found"
 	sleep 1.5
 	f_menu
 	fi
 clear
 f_header
-echo $BLU">$STD Remove saved capture files$STD"
-ls -t /root/THS_TMP/*.cap | sed '/./=' | sed '/./N;s/\n/ /'
+echo $BLU">$STD Remove saved THSuite scans / captures$STD"
+echo $STD
+# 
+echo "THSuite scans found; $GRNN"
+ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 echo $STD""
-echo -ne $GRN">$STD Remove all saved captures? y/n $GRN"
-read REM
-	if [[ "$REM" == "y" || "$REM" == "Y" ]] ; then
-	rm /root/THS_TMP/*.cap
-	rm /root/THS_TMP/*.csv
-	rm /root/THS_TMP/*.netxml
-	echo $GRN">$STD Removing all captures"
+echo "THSuite captures found; $GRNN"
+ls -t /root/THS_TMP/*.cap | sed '/./=' | sed '/./N;s/\n/ /'
+#
+echo $BLU"
+OPTIONS $STD
+1  Remove all THSuite scans
+2  Remove all THSuite captures
+3  Remove all THSuite scans and captures
+Q  Back to main menu
+"
+echo -ne $STD"Enter choice from above menu: $GRN"
+read LISTF
+	if [ "$LISTF" == "q" ] || [ "$LISTF" == "Q" ] ; then 
+	echo $STD""
+	f_menu
+	elif [ "$LISTF" == "" ] ; then f_list_wireless
+	elif [[ "$LISTF" != [1-3] ]]; then
+	echo $RED">$STD Input error $RED[$STD$LISTF$RED]$STD must be an entry from the above menu"$STD 
+	sleep 1
+	f_list_wireless
+	fi 
+#
+if [ "$LISTF" == "1" ] ; then
+	echo $GRN">$STD Removing all THSuite scan files"
+	rm -rf /root/THS_TMP/*.csv
+	rm -rf /root/THS_TMP/*.netxml
 	sleep 1
 	f_menu
-	else f_menu
-	fi
+elif [ "$LISTF" == "2" ] ; then
+	echo $GRN">$STD Removing all THSuite capture files"
+	rm -rf /root/THS_TMP/*.cap
+	sleep 1
+	f_menu
+elif [ "$LISTF" == "3" ] ; then
+	echo $GRN">$STD Removing all THSuite scan and capture files"
+	rm -rf /root/THS_TMP/*.csv
+	rm -rf /root/THS_TMP/*.netxml
+	rm -rf /root/THS_TMP/*.cap
+	sleep 1
+	f_menu
+fi
+#
 fi
 }
 #
@@ -920,12 +961,22 @@ echo $STD
 echo -ne $GRN">$STD Choose network # from list to attempt forcing a handshake: $GRN"
 read LISTNR
 MAXNR=$(cat /root/THS_TMP/scan_assist.tmp | wc -l)
-if [ "$LISTNR" == "" ] ; then f_menu ; fi
+if [ "$LISTNR" == "" ] ; then
+	if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then 
+	rm /root/THS_TMP/wpa_temp*
+	f_menu 
+	fi
+fi
 	while [[ ! "$LISTNR" =~ ^[1-$MAXNR]$ ]] ; do
 	echo $RED">$STD Input error $RED[$STD$LISTNR$RED]$TD Entry not in list"
 	echo -ne $GRN">$STD Choose network # from list to attempt forcing a handshake: $GRN"
 	read LISTNR
-	if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
+	if [ "$LISTNR" == "" ] ; then 
+		if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then 
+		rm /root/THS_TMP/wpa_temp* 
+		f_menu
+		fi
+	fi
 	done
 TARGET_AP=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $1}')
 CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
@@ -1082,6 +1133,7 @@ case $menu in
 4) f_list_wireless ;;
 5) f_force_wpa ;;
 6) f_wireless_disruption ;;
+u) f_update ;;
 q) f_exit ;; 
 Q) f_exit ;;
 v) f_vers ;;
@@ -1095,10 +1147,22 @@ done
 ################
 f_menu
 
+#The End
+#
+##
+### VERSION HISTORY 
+###################
+# v0.1 Released **-**-2013
+#
+##
+### TO DO
+######### 
+# - Fix correct listing of networks with handshakes (4-2)
+# - Check for correct mac syntax on manual WPA handshake grabs.
+# - Convert cap to hccap 
+# - Fix SSID list creation output 
+# - Optimise code with functions to reduce size / improve performane
+# - Include option to alter output/temp folder
+# - Write general help file / help file for each menu item
+# - 
 
-#TO DO 
-# Check for correct number entries.
-#
-# Convert cap to hccap 
-#
-#
