@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 11-08-2013 18:00
+#Last edit 12-08-2013 00:30
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #
@@ -23,8 +23,7 @@ BLUN=$(echo -e "\e[0;36m")		#Alter fonts to blue normal
 ### VARIABLES
 #############
 THSDIR="/root/THS)TMP/"
-
-
+SAVEDIR="/root/"
 #
 ##
 ### EXITING SCRIPT
@@ -528,7 +527,7 @@ OPTIONS$STD
 1  View Access Points and clients/probes
 2  Check scans for WPA 4-way handshakes
 3  Strip ESSIDs / Probes to wordlist
-4  Remove listed files
+4  Remove previous scans/captures
 Q  Back to main menu
 "
 echo -ne $STD"Enter choice from above menu: $GRN"
@@ -639,39 +638,63 @@ echo $STD"Found THSuite scans;$GRNN"
 ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 echo $STD""
 MAXNR=$(ls -l THS_TMP/*.csv | grep -v kismet.csv | wc -l)
-echo -ne $GRN">$STD Choose file # from list to strip info from [A for all]: $GRN"
+echo -ne $GRN">$STD Choose file # from list to strip info from [a for all]: $GRN"
 read LISTNR
 if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
-	while [[ ! "$LISTNR" =~ ^[1-$MAXNR]$ ]] && [ "$LISTNR" != "a" ] && [ "$LISTNR" != "A" ] ; do
+	while [[ ! "$LISTNR" =~ ^[1-$MAXNR]$ ]] && [ "$LISTNR" != "a" ] ; do
 	echo $RED">$STD Input error $RED[$STD$LISTNR$RED]$STD Entry not in list"
-	echo -ne $GRN">$STD Choose file # from list to strip info from [A for all]: $GRN"
+	echo -ne $GRN">$STD Choose file # from list to strip info from [a for all]: $GRN"
 	read LISTNR
 	if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	done
 #
-if [[ $"LISTNR" == "a" || $"LISTNR" == "A" ]] ; then
-echo "ALL Files"
-read
-f_menu
-#
-else
-FILEIN=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed -n "$LISTNR p")
-OUTFILE=$(date +"%Y%m%d-%H%M")
-#
-echo $GRN">$STD Stripping out ESSID and Probe information"
-for line in $(cat $FILEIN | sed -e '0,/Station MAC/d') ; do 
-PROBE=$(echo $line | awk -F , '{print $7}' | sed 's/[ ]//')
-echo -e "\n$PROBE" >> /root/THS_TMP/ssid_list.tmp
-done
-for line in $(cat $FILEIN | sed -e '0,/Station MAC/d') ; do 
-SSID=$(cat $FILEIN | sed '0,/BSSID/d;/Station MAC/,$d' | cut -d , -f 14 | sed 's/[ ]//')
-echo -e "\n$SSID" >> /root/THS_TMP/ssid_list.tmp
+if [ "$LISTNR" == "a" ] ; then
+FILEDATE=$(date +"%Y%m%d-%H%M")
+echo $GRN">$STD Stripping SSIDs and Probes from all scans"$STD
+for i in $(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv) ; do
+cat $i | sed '0,/BSSID/d;/Station MAC/,$d' | sed '$d' > /root/THS_TMP/csvfile_ap.tmp
+cat $i | sed -e '0,/Station MAC/d' -e '$d' > /root/THS_TMP/csvfile_cl.tmp
+	while read line ; do 
+	SSID=$(echo $line | awk -F , '{print $14}' | sed 's/[ ]//') 
+	echo -e "\n$SSID" >> /root/THS_TMP/ssid_list.tmp
+	done < /root/THS_TMP/csvfile_ap.tmp
+	sed -i '/^$/d' /root/THS_TMP/ssid_list.tmp
+	while read line ; do 
+	SSID=$(echo $line | awk -F , '{print $7}' | sed 's/[ ]//') 
+	echo -e "\n$SSID" >> /root/THS_TMP/ssid_list.tmp
+	done < /root/THS_TMP/csvfile_cl.tmp
+	sed -i '/^$/d' /root/THS_TMP/ssid_list.tmp
 done
 echo $GRN">$STD Sorting and removing duplicates"
-cat /root/THS_TMP/ssid_list.tmp | sort | uniq > /root/THS_TMP/SSIDS-"$OUTFILE".txt
-sed -i '/^$/d' /root/THS_TMP/SSIDS-"$OUTFILE".txt
-echo $GRN">$STD SSID wordlist created;$GRNN "
-ls -t /root/THS_TMP/SSIDS-*.txt | sed '/./=' | sed '/./N;s/\n/ /'
+cat /root/THS_TMP/ssid_list.tmp | sort | uniq > "$SAVEDIR"SSIDs"$FILEDATE".txt
+FILENAME="$SAVEDIR"ALLSSIDs"$FILEDATE".txt
+sed -i '1d' $FILENAME
+echo $GRN">$STD SSID wordlist $GRN$FILENAME$STD created"
+else
+#
+#
+FILEIN=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed -n "$LISTNR p")
+FILEBASE=$(echo $FILEIN | sed s'/\/root\/THS_TMP\///' | sed 's/.\{7\}$//')
+cat $FILEIN | sed '0,/BSSID/d;/Station MAC/,$d' | sed '$d' > /root/THS_TMP/csvfile_ap.tmp
+cat $FILEIN | sed -e '0,/Station MAC/d' -e '$d' > /root/THS_TMP/csvfile_cl.tmp
+#
+echo $GRN">$STD Stripping ESSID and Probe information from $GRN$FILEIN$STD"
+while read line ; do 
+SSID=$(echo $line | awk -F , '{print $14}' | sed 's/[ ]//') 
+echo -e "\n$SSID" >> /root/THS_TMP/ssid_list.tmp
+done < /root/THS_TMP/csvfile_ap.tmp
+sed -i '/^$/d' /root/THS_TMP/ssid_list.tmp
+while read line ; do 
+SSID=$(echo $line | awk -F , '{print $7}' | sed 's/[ ]//') 
+echo -e "\n$SSID" >> /root/THS_TMP/ssid_list.tmp
+done < /root/THS_TMP/csvfile_cl.tmp
+sed -i '/^$/d' /root/THS_TMP/ssid_list.tmp
+#
+echo $GRN">$STD Sorting and removing duplicates"
+cat /root/THS_TMP/ssid_list.tmp | sort | uniq > "$SAVEDIR"SSIDs"$FILEBASE".txt
+FILENAME="$SAVEDIR"SSIDs"$FILEBASE".txt
+sed -i '1d' $FILENAME
+echo $GRN">$STD SSID wordlist $GRN$FILENAME$STD created"
 fi
 echo -n $STD"
 Hit Enter to continue"
@@ -679,30 +702,26 @@ read
 f_list_wireless
 #
 # Option 4
-# Remove all saved THSuite scans
-# -------------------------------
+# Remove saved THSuite scans/captures
+# -----------------------------------
 elif [ "$LISTW" == "4" ] ; then 
+clear
+f_header
+echo $BLU">$STD Remove saved THSuite scans/captures $STD"
+echo $STD
 	if [[ ! "$(ls -A /root/THS_TMP/*.csv)" && ! "$(ls -A /root/THS_TMP/*.cap)" ]] ; then 
 	echo -e $RED"\n>$STD No THSuite scans / captures found"
 	sleep 1.5
 	f_menu
 	fi
-clear
-f_header
-echo $BLU">$STD Remove saved THSuite scans / captures$STD"
-echo $STD
 # 
-echo "THSuite scans found; $GRNN"
+echo $STD"THSuite scans/captures found; $GRNN"
 ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
-echo $STD""
-echo "THSuite captures found; $GRNN"
-ls -t /root/THS_TMP/*.cap | sed '/./=' | sed '/./N;s/\n/ /'
 #
 echo $BLU"
 OPTIONS $STD
-1  Remove all THSuite scans
-2  Remove all THSuite captures
-3  Remove all THSuite scans and captures
+1  Remove selected THSuite scans/captures
+2  Remove all THSuite scans/captures
 Q  Back to main menu
 "
 echo -ne $STD"Enter choice from above menu: $GRN"
@@ -711,31 +730,35 @@ read LISTF
 	echo $STD""
 	f_menu
 	elif [ "$LISTF" == "" ] ; then f_list_wireless
-	elif [[ "$LISTF" != [1-3] ]]; then
+	elif [[ "$LISTF" != [1-2] ]] ; then
 	echo $RED">$STD Input error $RED[$STD$LISTF$RED]$STD must be an entry from the above menu"$STD 
 	sleep 1
 	f_list_wireless
 	fi 
 #
-if [ "$LISTF" == "1" ] ; then
-	echo $GRN">$STD Removing all THSuite scan files"
-	rm -rf /root/THS_TMP/*.csv
-	rm -rf /root/THS_TMP/*.netxml
+	if [ "$LISTF" == "1" ] ; then
+	MAXNR=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | wc -l)
+	echo -n $GRN">$STD Choose # from above list to remove corresponding scan/capture files: $GRN"
+	read LISTNR
+	while [[ "$LISTNR" != [1-$MAXNR] ]] ; do 
+	if [ "$LISTF" == "" ] ; then f_list_wireless ; fi
+	echo $RED">$STD Input error $RED[$STD$REMFILE$RED]$STD List number does not exist"$STD
+	echo -n $GRN">$STD Choose # from above list to remove corresponding scans/captures: $GRN "
+	read LISTNR
+	done
+	REMFILE=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed 's/.\{4\}$//' | sed -n "$LISTNR p")
+	echo $GRN">$STD Removing $GRNN$REMFILE*$STD"
+	rm "$REMFILE"*
 	sleep 1
 	f_menu
-elif [ "$LISTF" == "2" ] ; then
-	echo $GRN">$STD Removing all THSuite capture files"
-	rm -rf /root/THS_TMP/*.cap
+	elif [ "$LISTF" == "2" ] ; then
+	echo $GRN">$STD Removing all THSuite scans/captures"
+	for i in $(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed 's/.\{4\}$//') ; do
+	rm "$i"*
+	done
 	sleep 1
 	f_menu
-elif [ "$LISTF" == "3" ] ; then
-	echo $GRN">$STD Removing all THSuite scan and capture files"
-	rm -rf /root/THS_TMP/*.csv
-	rm -rf /root/THS_TMP/*.netxml
-	rm -rf /root/THS_TMP/*.cap
-	sleep 1
-	f_menu
-fi
+	fi
 #
 fi
 }
@@ -1188,12 +1211,12 @@ done
 ################
 f_menu
 
-#The End
 #
 ##
-### VERSION HISTORY 
+### VERSION HISTORY
 ###################
 # v0.1 Released **-**-2013
+#
 #
 ##
 ### TO DO
@@ -1201,7 +1224,6 @@ f_menu
 # - Fix correct listing of networks with handshakes (4-2)
 # - Convert cap to hccap 
 # - Optimise code with functions to reduce size / improve performane
-# - Include option to alter output/temp folder
+# - Include option to alter save directory
 # - Write general help file / help file for each menu item
-# - 
 
