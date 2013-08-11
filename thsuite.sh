@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 01:00
+#Last edit 12-08-2013 01:30
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #
@@ -10,7 +10,7 @@
 ### FIXED SETTINGS
 ##################
 VERS=$(sed -n 3p $0 | awk '{print $2}')	#Version information 
-LED=$(sed -n 5p $0 | cut -d " " -f 3,4) #Date of last edit to script
+LED=$(sed -n 5p $0 | awk '{print $3 " - " $4}') #Date of last edit to script
 STD=$(echo -e "\e[0;0;0m")		#Revert fonts to standard colour/format
 RED=$(echo -e "\e[1;31m")		#Alter fonts to red bold
 REDN=$(echo -e "\e[0;31m")		#Alter fonts to red normal
@@ -1115,14 +1115,11 @@ f_exit
 f_update() {
 clear
 f_header
-echo
-echo $BLU">$STD Update function"
+echo $BLU">$STD Check latest version available"
 echo $STD""
-echo -ne $STD"Check the latest version available ? y/n "$GRN
-read UPD
+sleep 1
 echo $STD""
 LOC=$(pwd)
-if [[ $UPD == "y" || $UPD == "Y" ]] ; then 
 echo $GRN">$STD Checking Internet connection.."
 wget -q --tries=10 --timeout=5 http://www.google.com -O /tmp/index.google &> /dev/null
 	if [ ! -s /tmp/index.google ];then
@@ -1132,9 +1129,9 @@ wget -q --tries=10 --timeout=5 http://www.google.com -O /tmp/index.google &> /de
 	fi
 echo $GRN">$STD Getting info on latest available version.."
 NEW_VERS=$(curl -s http://thsuite.googlecode.com/svn/thsuite.sh | sed -n 3p | awk '{print $2}')
-NEW_LED=$(curl -s http://thsuite.googlecode.com/svn/thsuite.sh | sed -n 5p | awk '{print $3}')
+NEW_LED=$(curl -s http://thsuite.googlecode.com/svn/thsuite.sh | sed -n 5p | awk '{print $3 " - " $4}')
 echo $GRN">$STD Checking if latest version in use.."
-if [ "$VERS" != "$NEW_VERS" ] ; then
+if [[ "$VERS" != "$NEW_VERS" || "$LED" != "$NEW_LED" ]] ; then
 echo $RED">$STD Version in use is $RED$VERS$STD last edited on $LED"
 echo $GRN">$STD Latest version is $GRN$NEW_VERS$STD last edited on $NEW_LED"
 echo -n $GRN">$STD Update to latest ? y/n "$GRN
@@ -1157,9 +1154,7 @@ read UPD1
 	sleep 1
 	f_exit
 	fi
-else		
 f_exit
-fi
 }
 #
 ##
