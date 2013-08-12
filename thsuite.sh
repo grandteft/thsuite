@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 20:00
+#Last edit 12-08-2013 21:00
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -25,6 +25,7 @@ BLUN=$(echo -e "\e[0;36m")		#Alter fonts to blue normal
 #############
 THSDIR="/root/THS/TMP/"
 SAVEDIR="/root/"
+if [ ! -e /root/THS_TM/ ] ; then mkdir /root/THS_TM/ ; fi
 #
 ##
 ### EXITING SCRIPT
@@ -78,14 +79,13 @@ f_exit
 ### MAKE SURE NO TEMP FILES REMAINING BEFORE START FUNCTION
 ###########################################################
 f_clean() { 
-if [ -e /root/THS_TMP/handshake_list.tmp ] ; then rm /root/THS_TMP/handshake_list.tmp
-elif [ -e /root/THS_TMP/pyrit_cap_analyze.tmp ] ; then rm /root/THS_TMP/pyrit_cap_analyze.tmp
-elif [ -e /root/THS_TMP/csvfile_ap.tmp ] ; then rm /root/THS_TMP/csvfile_ap.tmp
-elif [ -e /root/THS_TMP/csvfile_cl.tmp ] ; then rm /root/THS_TMP/csvfile_cl.tmp
-elif [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp*
-elif [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp
-elif [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp
-fi
+if [ -e /root/THS_TMP/handshake_list.tmp ] ; then rm /root/THS_TMP/handshake_list.tmp ; fi
+if [ -e /root/THS_TMP/pyrit_cap_analyze.tmp ] ; then rm /root/THS_TMP/pyrit_cap_analyze.tmp ; fi
+if [ -e /root/THS_TMP/csvfile_ap.tmp ] ; then rm /root/THS_TMP/csvfile_ap.tmp ; fi
+if [ -e /root/THS_TMP/csvfile_cl.tmp ] ; then rm /root/THS_TMP/csvfile_cl.tmp ; fi
+if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
+if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
+if [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp ; fi
 } 
 #
 ##
