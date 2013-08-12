@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 16:30
+#Last edit 12-08-2013 18:00
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -890,7 +890,7 @@ read IFACE
 	if [ "$IFACE" == "" ] ; then f_force_wpa ; fi
 	while ! airmon-ng | sed "0,/Interface/d" | cut -f 1 | grep -Fxq $IFACE ; do
 	echo $RED">$STD Interface error $RED[$STD$IFACE$RED]$STD Interface does not exist."
-		echo -n $GRN">$STD Enter monitor interface to listen on/save capture: $GRN"
+		echo -n $GRN">$STD Enter monitor interface to listen/save capture on: $GRN"
 	read IFACE
 	if [ "$IFACE" == "" ] ; then f_force_wpa ; fi
 	done
@@ -957,6 +957,10 @@ read DIFACE
 	sleep 1.5
 	f_force_wpa
 	fi
+if [ "$DIFACE" != "$IFACE" ] ; then 
+iwconfig $DIFACE channel $TARGET_CHAN
+sleep 0.5
+fi
 #
 echo -n $GRN">$STD Enter number of deauth packets to send: $GRN"
 read DEAUTHS
@@ -1113,6 +1117,8 @@ TARGET_AP=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print
 TARGET_CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
 TARGET_CL=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $2}')
 #
+iwconfig $DIFACE channel $TARGET_CHAN
+sleep 0.5
 echo $GRN">$STD Attempting to force & capture handshake"
 NAME=$(echo $TARGET_AP | sed 's/:/-/g')
 FILENAME="HANDSHAKE-$NAME"
@@ -1299,6 +1305,7 @@ f_menu
 ##
 ### TO DO
 ######### 
+# - Check how to check channels mon inj iface.
 # - Fix correct listing of networks with handshakes (4-2)
 # - Convert cap to hccap 
 # - Optimise code with functions to reduce size / improve performane
