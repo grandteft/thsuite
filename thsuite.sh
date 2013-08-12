@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 21:00
+#Last edit 12-08-2013 22:00
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -25,7 +25,7 @@ BLUN=$(echo -e "\e[0;36m")		#Alter fonts to blue normal
 #############
 THSDIR="/root/THS/TMP/"
 SAVEDIR="/root/"
-if [ ! -e /root/THS_TM/ ] ; then mkdir /root/THS_TM/ ; fi
+if [ ! -e /root/THS_TMP/ ] ; then mkdir /root/THS_TMP/ ; fi
 #
 ##
 ### EXITING SCRIPT
