@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 14:30
+#Last edit 12-08-2013 15:30
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -347,7 +347,7 @@ echo $BLU">$STD MAC address manipulation"$STD
 echo $STD""
 echo $STD"Available interface(s)"$GRN
 f_exist
-f_iface_mac
+f_iface_stat
 echo $STD""
 echo -ne $GRN">$STD Enter interface to change MAC on: $GRN"
 read IFACE
@@ -1135,7 +1135,7 @@ fi
 HS_FILE=$(echo $TARGET_AP | sed 's/:/-/g')
 mv $SAVEDIR"$FILENAME"* $SAVEDIR"$HS_FILE".cap
 #
-echo $GRN">$STD Checking capture file with pyrit"
+echo $GRN">$STD Checking capture $SAVEDIR"$HS_FILE".cap with pyrit"
 pyrit -r $SAVEDIR"$HS_FILE".cap analyze
 #
 if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
@@ -1258,7 +1258,7 @@ v  version info
 Q  Exit
 !
 echo ""
-echo -ne $STAND"Choose from the above menu: "$GRN
+echo -ne $STD"Choose from the above menu: "$GRN
 read menu
 
 
@@ -1273,7 +1273,7 @@ u) f_update ;;
 q) f_exit ;; 
 Q) f_exit ;;
 v) f_vers ;;
-*) echo $RED"\"$menu\" is not a valid menu item"$STAND; sleep 0.5 ;;
+*) echo $RED"\"$menu\" is not a valid menu item"$STD; sleep 0.5 ;;
 esac
 done
 }
