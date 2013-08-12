@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 14:00
+#Last edit 12-08-2013 14:30
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -549,7 +549,7 @@ echo $STD""
 echo $STD"Found THSuite scans;$GRNN"
 ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 echo $STD""
-MAXNR=$(ls -l THS_TMP/*.csv | grep -v kismet.csv | wc -l)
+MAXNR=$(ls -l /root/THS_TMP/*.csv | grep -v kismet.csv | wc -l)
 echo -ne $GRN">$STD Choose file # from list to view network info: $GRN"
 read LISTNR
 if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
@@ -573,7 +573,7 @@ echo $STD""
 echo $STD"Found THSuite scans;$GRNN"
 ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 echo $STD""
-MAXNR=$(ls -l THS_TMP/*.csv | grep -v kismet.csv | wc -l)
+MAXNR=$(ls -l /root/THS_TMP/*.csv | grep -v kismet.csv | wc -l)
 echo -ne $GRN">$STD Choose # from list to check scan for handshakes: $GRN"
 read LISTNR
 if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
@@ -633,7 +633,7 @@ echo $STD
 echo $STD"Found THSuite scans;$GRNN"
 ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 echo $STD""
-MAXNR=$(ls -l THS_TMP/*.csv | grep -v kismet.csv | wc -l)
+MAXNR=$(ls -l /root/THS_TMP/*.csv | grep -v kismet.csv | wc -l)
 echo -ne $GRN">$STD Choose file # from list to strip info from [a for all]: $GRN"
 read LISTNR
 if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
