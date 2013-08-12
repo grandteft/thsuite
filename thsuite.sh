@@ -2,10 +2,10 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 12-08-2013 13:00
+#Last edit 12-08-2013 14:00
 #Written, and intended for use on CR4CK3RB0X -- THS-OS v3
 #Tested with success on Kali Linux
-#wget -q http://thsuite.googlecode.com/svn/thsuite.sh -O thsuite.sh
+#Source: http://thsuite.googlecode.com/svn/thsuite.sh
 #
 ##
 ### FIXED SETTINGS
@@ -481,15 +481,14 @@ FILEOUT=$(date +"%Y%m%d-%H%M")
 if [[ "$CHAN" != "" && "$SCAN" != "" ]] ; then
 timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/$FILEOUT
 elif [[ "$CHAN" != "" && "$SCAN" == "" ]] ; then
+echo $GRN">$STD Ctrl+C to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/$FILEOUT
 elif [[ "$CHAN" == "" && "$SCAN" == "" && "$HOP" == "" ]] ; then
 echo $GRN">$STD Ctrl+C to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/$FILEOUT
 elif [[ "$CHAN" == "" && "$SCAN" != "" && "$HOP" == "" ]] ; then
-echo $GRN">$STD Ctrl+C to stop scan"
 timeout $SCAN xterm -T "Ctrl C to quit any time" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/$FILEOUT
 elif [[ "$CHAN" == "" && "$SCAN" != "" && "$HOP" != "" ]] ; then
-echo $GRN">$STD Ctrl+C to stop scan"
 timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/$FILEOUT
 elif [[ "$CHAN" == "" && "$SCAN" == "" && "$HOP" != "" ]] ; then
 echo $GRN">$STD Ctrl+C to stop scan"
@@ -706,7 +705,8 @@ clear
 f_header
 echo $BLU">$STD Remove saved THSuite scans/captures $STD"
 echo $STD
-	if [[ ! "$(ls -A /root/THS_TMP/*.csv)" && ! "$(ls -A /root/THS_TMP/*.cap)" ]] ; then 
+	FILES=$(ls -A /root/THS_TMP/) 
+	if [ "$FILES" == "" ] ; then 
 	echo -e $RED"\n>$STD No THSuite scans / captures found"
 	sleep 1.5
 	f_menu
@@ -819,8 +819,14 @@ done <  /root/THS_TMP/csvfile_cl.tmp
 echo $STD""
 echo -n $STD"Hit Enter to go back "
 read
-else f_list_wireless
+else 
+f_list_wireless
+	if [ -e /root/THS_TMP/csvfile_ap.tmp ] ; then rm /root/THS_TMP/csvfile_ap.tmp ; fi
+	if [ -e /root/THS_TMP/csvfile_cl.tmp ] ; then rm /root/THS_TMP/csvfile_cl.tmp ; fi
+
 fi
+	if [ -e /root/THS_TMP/csvfile_ap.tmp ] ; then rm /root/THS_TMP/csvfile_ap.tmp ; fi
+	if [ -e /root/THS_TMP/csvfile_cl.tmp ] ; then rm /root/THS_TMP/csvfile_cl.tmp ; fi
 f_list_wireless
 }
 #
@@ -863,12 +869,12 @@ echo $STD"Available interface(s);"
 f_iface_stat
 echo $STD
 #
-echo -n $GRN">$STD Enter monitor interface to scan/save capture: $GRN"
+echo -n $GRN">$STD Enter monitor interface to listen on/save capture: $GRN"
 read IFACE
 	if [ "$IFACE" == "" ] ; then f_force_wpa ; fi
 	while ! airmon-ng | sed "0,/Interface/d" | cut -f 1 | grep -Fxq $IFACE ; do
 	echo $RED">$STD Interface error $RED[$STD$IFACE$RED]$STD Interface does not exist."
-	echo -n $GRN">$STD Enter monitor interface to scan/save capture: $GRN"
+		echo -n $GRN">$STD Enter monitor interface to listen on/save capture: $GRN"
 	read IFACE
 	if [ "$IFACE" == "" ] ; then f_force_wpa ; fi
 	done
@@ -921,6 +927,21 @@ echo -n $GRN">$STD Enter scantime duration: $GRN"
 read SCANTIME
 done
 #
+echo -n $GRN">$STD Enter monitor interface to send deauth packets: $GRN"
+read DIFACE
+	if [ "$DIFACE" == "" ] ; then DIFACE=$IFACE ; fi
+	while ! airmon-ng | sed "0,/Interface/d" | cut -f 1 | grep -Fxq $DIFACE ; do
+	echo $RED">$STD Interface error $RED[$STD$DIFACE$RED]$STD Interface does not exist."$STD
+	echo -n $GRN">$STD Enter monitor interface to send deauth packets: $GRN"
+	read DIFACE
+	if [ "$DIFACE" == "" ] ; then DIFACE=$IFACE ; fi
+	done
+	if [[ ! "$DIFACE" =~ "mon" ]] ; then
+	echo $RED"> [$STD$DIFACE$RED]$STD is not a monitor interface"
+	sleep 1.5
+	f_force_wpa
+	fi
+#
 echo -n $GRN">$STD Enter number of deauth packets to send: $GRN"
 read DEAUTHS
 while [ ! `expr $DEAUTHS + 1 2> /dev/null` ] ; do
@@ -929,11 +950,18 @@ echo -n $GRN">$STD Enter number of deauth packets to send: $GRN"
 read DEAUTHS
 done
 echo $GRN">$STD Running airodump to capture credentials and aireplay to deauth client"
-DATE=$(date +"%Y%m%d-%H%M")
-FILEOUT='"$TARGET_AP$DATE".cap'
-
+NAME=$(echo $TARGET_AP | sed 's/:/-/g')
+FILENAME="HANDSHAKE-$NAME"
+#
 sleep 4 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 $DEAUTHS -a $TARGET_AP -c $TARGET_CL \
 & timeout $SCANTIME xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
+#Rename and move capture file 
+HS_FILE=$(echo $TARGET_AP | sed 's/:/-/g')
+mv $SAVEDIR"$FILENAME"* $SAVEDIR"$HS_FILE".cap
+#
+echo $GRN">$STD Checking capture$GRN "$SAVEDIR$HS_FILE".cap$STD with pyrit"$STD
+pyrit -r $SAVEDIR"$HS_FILE".cap analyze
+f_exit
 #
 #
 # Option 2
@@ -1023,8 +1051,8 @@ echo -ne $GRN">$STD Choose network # from list to attempt forcing a handshake: $
 read LISTNR
 MAXNR=$(cat /root/THS_TMP/scan_assist.tmp | wc -l)
 if [ "$LISTNR" == "" ] ; then
-	if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then 
-	rm /root/THS_TMP/wpa_temp*
+	if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp*
+	elif [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp
 	f_force_wpa
 	fi
 fi
@@ -1033,8 +1061,8 @@ fi
 	echo -ne $GRN">$STD Choose network # from list to attempt forcing a handshake: $GRN"
 	read LISTNR
 	if [ "$LISTNR" == "" ] ; then 
-		if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then 
-		rm /root/THS_TMP/wpa_temp* 
+		if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp*
+		elif [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp
 		f_force_wpa
 		fi
 	fi
@@ -1046,12 +1074,12 @@ if [[ "$SEND" == "n" || "$SEND" == "N" ]] ; then
 echo $STD"Available interface(s);"
 f_iface_stat
 echo $STD
-echo -n $GRN">$STD Enter monitor interface to scan/save capture: $GRN"
+echo -n $GRN">$STD Enter monitor interface to listen on/save capture: $GRN"
 read IFACE
 	if [ "$IFACE" == "" ] ; then f_force_wpa ; fi
 	while ! airmon-ng | sed "0,/Interface/d" | cut -f 1 | grep -Fxq $IFACE ; do
 	echo $RED">$STD Interface error $RED[$STD$IFACE$RED]$STD Interface does not exist."$STD
-	echo -n $GRN">$STD Enter monitor interface to scan/save capture: $GRN"
+	echo -n $GRN">$STD Enter monitor interface to listen on/save capture: $GRN"
 	read IFACE
 	if [ "$IFACE" == "" ] ; then f_force_wpa ; fi
 	done
@@ -1110,7 +1138,7 @@ mv $SAVEDIR"$FILENAME"* $SAVEDIR"$HS_FILE".cap
 echo $GRN">$STD Checking capture file with pyrit"
 pyrit -r $SAVEDIR"$HS_FILE".cap analyze
 #
-rm /root/THS_TMP/wpa_temp*
+if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
 if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
 f_exit
 }
