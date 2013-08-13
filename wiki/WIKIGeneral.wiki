@@ -17,7 +17,7 @@ Run script (from script location directory)
 }}}
 
 
-= GENERAL USAGE = 
+= General Usage = 
 Enter an option from the main menu to take you to either a sub-menu or directly to the option chosen.
 
 
