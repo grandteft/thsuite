@@ -1,10 +1,9 @@
 #Installation & General Usage Information.
 
-= INSTALLATION =
+= Installation =
 
 No real installation needed.
 Just download the script to a directory of your choice (for instance /root/)
-
 {{{
 wget -q http://thsuite.googlecode.com/svn/thsuite.sh -O /root/thsuite.sh
 }}}
@@ -12,6 +11,11 @@ For ease of use best to make executable with chmod
 {{{
 chmod +x /root/thsuite.sh
 }}}
+Run script (from script location directory)
+{{{
+./thsuite.sh
+}}}
+
 
 = GENERAL USAGE = 
 Enter an option from the main menu to take you to either a sub-menu or directly to the option chosen.
