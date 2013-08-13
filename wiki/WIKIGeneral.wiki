@@ -6,7 +6,8 @@ Menu based bash script to simplify the standard commands used
 when performing wireless auditing/reconnaissance.
 
 ----
-
+Intended for use on PenTest distros such as THS-OS / Kali Linux
+----
 = Installation =
 
 No real installation needed.
