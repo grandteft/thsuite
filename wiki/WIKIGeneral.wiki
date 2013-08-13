@@ -2,8 +2,10 @@
 
 http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite_main-menu_zps6f72cb71.png
 
-Menu based script to simplify the standard commands used
+Menu based bash script to simplify the standard commands used
 when performing wireless auditing/reconnaissance.
+
+----
 
 = Installation =
 
@@ -21,14 +23,11 @@ Run script (from script location directory)
 ./thsuite.sh
 }}}
 
+----
 
 = General Usage = 
 Enter an option from the main menu to take you to either a sub-menu or directly to the option chosen.
 
 
-= Details =
-
-Add your content here.  Format your content with:
-  * Text in *bold* or _italic_
-  * Headings, paragraphs, and lists
-  * Automatic links to other wiki pages
+----
+More to come
