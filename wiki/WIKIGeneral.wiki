@@ -1,4 +1,9 @@
-#Installation & General Usage Information.
+= THSuite = 
+
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite_main-menu_zps6f72cb71.png
+
+Menu based script to simplify the standard commands used
+when performing wireless auditing/reconnaissance.
 
 = Installation =
 
