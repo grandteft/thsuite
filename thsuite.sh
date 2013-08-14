@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 14-08-2013 13:00 
+#Last edit 14-08-2013 13:30
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -352,7 +352,7 @@ f_iface
 elif [ "$IFACE_MENU" == "5" ] ; then 
 echo $STD"
 If you chose to kill processes that may affect performance during monitor
-interface  creation, this will have killed your networking services."
+interface creation, this will have killed your networking services."
 echo $STD
 echo -n $GRN">$STD Attempt to restart networking processes / services? y/N $GRN"
 read RESTART
@@ -503,14 +503,15 @@ if [[ ! "$IFACE" =~ "mon" ]] ; then
 	f_wireless_scan
 fi 
 #
-echo  -ne $GRN">$STD Enter channel to scan on (Hit Enter for all channels): $GRN"
+echo $BLUN"Optional Input (hit Enter for default)$STD"
+echo  -ne $GRN">$STD Enter channel to scan on (default: all channels): $GRN"
 read CHAN
 	if [[ "$CHAN" == "" || "$CHAN" == *,* ]] ; then 
 	echo -ne $GRN">$STD Enter channel hop frequency in seconds: $GRN"
 	read HOP
 		if [ "$HOP" != "" ] ; then HOP=$(( $HOP * 1000 )) ; fi
 	fi
-echo -ne $GRN">$STD Enter scan time (Enter for no limit): $GRN"
+echo -ne $GRN">$STD Enter scan time (default: no limit): $GRN"
 read SCAN
 FILEOUT=$(date +"%Y%m%d-%H%M")
 if [[ "$CHAN" != "" && "$SCAN" != "" ]] ; then
@@ -1011,24 +1012,21 @@ sleep $WAIT && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0
 & timeout $SCANTIME xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap,csv -w "$THSDIR"wpa_temp
 # File preparation
 CAPFILE="$THSDIR"wpa_temp-01.cap
-CSVFILE="$THSDIR"wpa_temp-01.csv
-echo $GRN">$STD Stripping network SSID from capture"$STD 
+CSVFILE="$THSDIR"wpa_temp-01.csv 
 TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
 # Rename and move capture file
 mv $CAPFILE $SAVEDIR"$TARGET_SSID".cap
 HANDSHAKE=$SAVEDIR"$TARGET_SSID".cap
 # tmp files deletion check
 f_clean
-#
-#
-#
+echo $GRN">$STD Attack attempt complete"
 echo $STD
 echo -n $GRN">$STD Check $HANDSHAKE for handshakes? y/N $GRN"
 read CHECK
 if [[ "$CHECK" == "y" || "$CHECK" == "Y" ]] ; then
 f_handshake_check
 else
-f_exit
+f_menu
 fi
 #
 #
@@ -1069,14 +1067,15 @@ f_scan_assist_wpa() {
 f_clean
 DATE=$(date +"%Y%m%d-%H%M")
 FILEOUT="$TARGET_AP$DATE".cap
-echo  -ne $GRN">$STD Enter channel to scan on (Hit Enter for all channels): $GRN"
+echo $BLUN"Optional Input (hit Enter for default)"
+echo  -ne $GRN">$STD Enter channel to scan on (default: all channels): $GRN"
 read CHAN
 	if [[ "$CHAN" == "" || "$CHAN" == *,* ]] ; then 
 	echo -ne $GRN">$STD Enter channel hop frequency in seconds: $GRN"
 	read HOP
 		if [ "$HOP" != "" ] ; then HOP=$(( $HOP * 1000 )) ; fi
 	fi
-echo -ne $GRN">$STD Enter scan time (Enter for no limit): $GRN"
+echo -ne $GRN">$STD Enter scan time (default: no limit): $GRN"
 read SCAN
 
 if [[ "$CHAN" != "" && "$SCAN" != "" ]] ; then
@@ -1531,9 +1530,9 @@ f_menu
 ##
 ### TO DO
 ######### 
-# - Include test to see whether network in range of adapter's sending range (mdk3 p)
+# - Include test to see whether target network is in range of adapter's sending range (mdk3 p)
 # - Convert cap to hccap 
-# - Optimise code with functions to reduce size / improve performane
+# - Optimise code to reduce size / improve performane
 # - Include option to alter save directory
 # - Write general help file / help file for each menu item
 # - Improve checking of monitor mode to allow names other than mon*
