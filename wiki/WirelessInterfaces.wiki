@@ -35,3 +35,11 @@ http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-1-5_zpsda51e021.png
 ----
 If during the creation process of a monitor interface it was chosen to kill processes that may affect performance, network processes and services would have been killed.
 This option attempts to restart services / processes to get network connectivity back.
+
+----
+= Wiki Links =
+  # https://code.google.com/p/thsuite/wiki/WIKIGeneral
+  # https://code.google.com/p/thsuite/wiki/WirelessInterfaces
+  # https://code.google.com/p/thsuite/wiki/MacAddressManipulation
+  # https://code.google.com/p/thsuite/wiki/WirelessScanning
+  # https://code.google.com/p/thsuite/wiki/ViewScansCaptures
