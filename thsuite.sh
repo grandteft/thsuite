@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 13-08-2013 21:00 
+#Last edit 14-08-2013 02:30 
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -43,6 +43,7 @@ if [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp ; fi
 if [ -e /root/THS_TMP/trash.tmp ] ; then rm /root/THS_TMP/trash.tmp ; fi
 if [ -e "$THSDIR"blacklist.tmp ] ; then rm "$THSDIR"blacklist.tmp ; fi
 if [ -e "$THSDIR"whitelist.tmp ] ; then rm "$THSDIR"whitelist.tmp ; fi
+if [ -e /root/THS_TMP/handshake_list_full.tmp ] ; then rm /root/THS_TMP/handshake_list_full.tmp ; fi
 echo $STD""
 exit 0
 }
@@ -91,6 +92,7 @@ if [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp ; fi
 if [ -e /root/THS_TMP/trash.tmp ] ; then rm /root/THS_TMP/trash.tmp ; fi
 if [ -e "$THSDIR"blacklist.tmp ] ; then rm "$THSDIR"blacklist.tmp ; fi
 if [ -e "$THSDIR"whitelist.tmp ] ; then rm "$THSDIR"whitelist.tmp ; fi
+if [ -e /root/THS_TMP/handshake_list_full.tmp ] ; then rm /root/THS_TMP/handshake_list_full.tmp ; fi
 } 
 #
 ##
@@ -180,6 +182,7 @@ OPTIONS $STD
 2  Stop all monitor interfaces
 3  Put all interfaces 'down'
 4  View/Alter TX power settings
+5  Attempt to restart networking services
 Q  Back to main menu
 $STD"
 echo -ne "Enter choice from above menu: $GRN"
@@ -188,7 +191,7 @@ read IFACE_MENU
 	echo $STD""
 	f_menu
 	elif [ "$IFACE_MENU" == "" ] ; then f_menu
-	elif [[ "$IFACE_MENU" != [1-4] ]]; then
+	elif [[ "$IFACE_MENU" != [1-5] ]]; then
 	echo $RED">$STD Input error $RED[$STD$IFACE_MENU$RED]$STD must be an entry from the above menu$STD"
 	sleep 1
 	f_iface
@@ -224,7 +227,7 @@ echo $RED">$STD Interface selected already in monitor mode"
 sleep 2
 f_iface
 fi
-echo -ne $GRN">$STD Kill all processes that may limit performance? y/N $GRN"
+echo -ne $GRN">$STD Kill processes that may affect performance (airmon-ng check kill) y/N $GRN"
 read CHECKKILL
 if [[ "$CHECKKILL" == "y" || "$CHECKKILL" == "Y" ]] ; then 
 xterm -geometry 96x15-0+0 -e airmon-ng check kill
@@ -246,7 +249,6 @@ for i in $(airmon-ng | sed "0,/Interface/d" | cut -f 1) ; do
 	fi
 done
 echo $GRN">$STD All monitor interfaces stopped"
-sleep 1.5
 f_iface
 #
 # Option 3
@@ -353,6 +355,28 @@ done
 	fi
 fi
 f_iface
+#
+# Option 5
+# Restart network services
+# ------------------------
+elif [ "$IFACE_MENU" == "5" ] ; then 
+echo $STD"
+If you chose to kill processes that may affect performance during monitor
+interface  creation, this will have killed your networking services."
+echo $STD
+echo -n $GRN">$STD Attempt to restart networking processes / services? y/N $GRN"
+read RESTART
+	if [[ "$RESTART" == "y" || "$RESTART" == "Y" ]] ; then
+	echo $GRN">$STD Here we go.."
+	/etc/init.d/networking start
+	sleep 1.5
+	service network-manager start
+	sleep 1.5
+	NetworkManager
+	sleep 1
+fi
+f_menu
+#
 fi
 }
 #-------------------#	
@@ -502,17 +526,17 @@ FILEOUT=$(date +"%Y%m%d-%H%M")
 if [[ "$CHAN" != "" && "$SCAN" != "" ]] ; then
 timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/$FILEOUT
 elif [[ "$CHAN" != "" && "$SCAN" == "" ]] ; then
-echo $GRN">$STD Ctrl+C to stop scan"
+echo $STD"Ctrl-C on xterm window to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/$FILEOUT
 elif [[ "$CHAN" == "" && "$SCAN" == "" && "$HOP" == "" ]] ; then
-echo $GRN">$STD Ctrl+C to stop scan"
+echo $STD"Ctrl-C on xterm window to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/$FILEOUT
 elif [[ "$CHAN" == "" && "$SCAN" != "" && "$HOP" == "" ]] ; then
 timeout $SCAN xterm -T "Ctrl C to quit any time" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/$FILEOUT
 elif [[ "$CHAN" == "" && "$SCAN" != "" && "$HOP" != "" ]] ; then
 timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/$FILEOUT
 elif [[ "$CHAN" == "" && "$SCAN" == "" && "$HOP" != "" ]] ; then
-echo $GRN">$STD Ctrl+C to stop scan"
+echo $STD"Ctrl-C on xterm window to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/$FILEOUT
 fi
 echo $STD
@@ -600,44 +624,47 @@ if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	read LISTNR
 	if [ "$LISTNR" == "" ] ; then f_list_wireless ; fi
 	done
-	CSVFILE=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed -n "$LISTNR p")
-	CAPFILE=$(echo $CSVFILE | sed 's/.csv/.cap/')
+#
+CSVFILE=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed -n "$LISTNR p")
+CAPFILE=$(echo $CSVFILE | sed 's/.csv/.cap/')
 HANDSHAKE=$CAPFILE
+echo $STD
 pyrit -r "$CAPFILE" analyze  > /root/THS_TMP/pyrit_cap_analyze.tmp
 sed -i -e 's/^[ \t]*//' -e 's/ *$//' /root/THS_TMP/pyrit_cap_analyze.tmp
-
-while read line ; do 
+while read line ; do
 HAND=$(echo $line | grep -i "handshake(s)")
 if [ "$HAND" != "" ] ; then
-HANDCL=$(echo "$HAND" | awk '{print $3}' | sed 's/,//' | tr '[:lower:]' '[:upper:]')
-HANDAP=$(cat $CSVFILE | sed -e '0,/Station MAC/d' | grep $HANDCL | cut -d , -f 6 | sed -e 's/^ *//' -e 's/ *$//')
-HANDESSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $HANDAP | cut -d , -f 14 | sed 's/[ ]//')
-HANDCHAN=$(cat $CSVFILE| sed '0,/BSSID/d;/Station MAC/,$d' | grep $HANDAP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
-printf '%-20s %-22s %-8s %-15s\n' "$HANDAP" "$HANDCL" "$HANDCHAN" "$HANDESSID" >> /root/THS_TMP/handshake_list.tmp
+echo $HAND >> /root/THS_TMP/handshake_list.tmp
 fi
 done < /root/THS_TMP/pyrit_cap_analyze.tmp
-if [ -e /root/THS_TMP/handshake_list.tmp ] ; then
+#
+	if [ -e /root/THS_TMP/handshake_list.tmp ] ; then
+	echo $GRN">$STD Handshakes found"
+	echo $BLUN"      BSSID             CLIENT MAC        CHANNEL    ESSID"
+	echo $STD"-----------------    -----------------    -------    -----"
+	while read line ; do 
+	TARGET_CL=$(echo $line | awk '{print $3}' | sed 's/.$//' | tr '[:lower:]' '[:upper:]')
+	TARGET_AP=$(cat $CSVFILE | sed '0,/Station MAC/d' | grep $TARGET_CL | awk '{print $8}' | sed 's/.$//')
+	TARGET_CHAN=$(cat $CSVFILE| sed '0,/BSSID/d;/Station MAC/,$d' | grep -a $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
+	TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep -a $TARGET_AP | awk -F , '{print $14}' | sed 's/[ ]//')
+	printf '%-20s %-22s %-8s %-15s\n' "$TARGET_AP" "$TARGET_CL" "$TARGET_CHAN" "$TARGET_SSID" >> /root/THS_TMP/handshake_list_full.tmp
+	done < /root/THS_TMP/handshake_list.tmp
+	cat /root/THS_TMP/handshake_list_full.tmp
+	else echo $RED">$STD No handshakes found" 
+	sleep 1.5
+	f_list_wireless
+	fi
 echo $STD""
-echo $STD"Capture $GRNN$FILEIN$STD contains handshake(s) for networks"
-echo $STD
-echo $BLUN"      BSSID             CLIENT MAC        CHANNEL    ESSID"
-echo $STD"-----------------    -----------------    -------    -----"
-cat /root/THS_TMP/handshake_list.tmp
-elif [ ! -e /root/THS_TMP/handshake_list.tmp ] ; then
-echo $RED">$STD No handshakes found, exiting to menu"
-sleep 1.5
-f_list_wireless
-fi
-echo ""
 echo -n $STD"Strip handshakes to individual files ? y/N $GRN"
 read STRIP
 if [[ "$STRIP" == "y" || "$STRIP" == "Y" ]] ; then
 f_strip
 else
+#
 	if [ -e /root/THS_TMP/handshake_list.tmp ] ; then rm /root/THS_TMP/handshake_list.tmp ; fi 
 	if [ -e /root/THS_TMP/pyrit_cap_analyze.tmp ] ; then rm /root/THS_TMP/pyrit_cap_analyze.tmp ; fi
+	if [ -e /root/THS_TMP/handshake_list_full.tmp ] ; then rm /root/THS_TMP/handshake_list_full.tmp ; fi
 fi
-f_list_wireless
 #
 # Option 3
 # Strip all ESSIDs and Probes to wordlist 
@@ -790,11 +817,11 @@ echo $BLU">$STD Stripping Handshakes with Pyrit"
 echo $STD""
 while read line ; do
 echo $STD""
-HANDESSID=$(echo $line | awk '{print $4}')
-OUTFILE=$(echo $line | awk '{print $4}' | sed -e 's/ /-/' -e 's/$/.cap/')
-pyrit -e $HANDESSID -r $FILEIN -o $SAVEDIR$OUTFILE strip
-echo $GRN">$STD handshake strip for $GRN$HANDESSID$STD complete.."
-done < /root/THS_TMP/handshake_list.tmp
+TARGET_SSID=$(echo $line | awk '{print $4}')
+OUTFILE="$TARGET_SSID".cap
+pyrit -e $TARGET_SSID -r $HANDSHAKE -o $SAVEDIR$OUTFILE strip
+echo $BLU"Handshake strip for $GRN$TARGET_SSID$BLU complete.."
+done < /root/THS_TMP/handshake_list_full.tmp
 f_exit
 }
 #
@@ -1048,17 +1075,17 @@ read SCAN
 if [[ "$CHAN" != "" && "$SCAN" != "" ]] ; then
 timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/wpa_temp
 elif [[ "$CHAN" != "" && "$SCAN" == "" ]] ; then
-echo $GRN">$STD Ctrl C to stop scan"
+echo $STD"Ctrl-C on xterm window to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/wpa_temp
 elif [[ "$CHAN" == "" && "$SCAN" == "" && "$HOP" == "" ]] ; then
-echo $GRN">$STD Ctrl C to stop scan"
+echo $STD"Ctrl-C on xterm window to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/wpa_temp
 elif [[ "$CHAN" == "" && "$SCAN" != "" && "$HOP" == "" ]] ; then
 timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/wpa_temp
 elif [[ "$CHAN" == "" && "$SCAN" != "" && "$HOP" != "" ]] ; then
 timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/wpa_temp
 elif [[ "$CHAN" == "" && "$SCAN" == "" && "$HOP" != "" ]] ; then
-echo $GRN">$STD Ctrl C to stop scan"
+echo $STD"Ctrl-C on xterm window to stop scan"
 xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/wpa_temp
 fi
 echo $STD
@@ -1346,6 +1373,8 @@ read ATTACKTIME
 done
 #Creating blacklist file
 echo $TARGET_AP > "$THSDIR"blacklist.tmp
+#Starting attack
+echo $GRN">$STD Attempting deauth attack on $GRNN$TARGET_AP$STD"
 if [ "$ATTACKTIME" == "" ] ; then
 echo $STD"Ctrl-C on xterm window to stop scan"
 xterm -T "THSuite - Deny access to $TARGET_AP" -geometry 105x20-0-0 -e mdk3 $IFACE d -b "$THSDIR"blacklist.tmp -c $TARGET_CHAN
@@ -1391,8 +1420,8 @@ NEW_VERS=$(curl -s http://thsuite.googlecode.com/svn/thsuite.sh | sed -n 3p | aw
 NEW_LED=$(curl -s http://thsuite.googlecode.com/svn/thsuite.sh | sed -n 5p | awk '{print $3 " - " $4}')
 echo $GRN">$STD Checking if latest version in use.."
 if [[ "$VERS" != "$NEW_VERS" || "$LED" != "$NEW_LED" ]] ; then
-echo $RED">$STD Version in use is $RED$VERS$STD last edited on $LED"
-echo $GRN">$STD Latest version is $GRN$NEW_VERS$STD last edited on $NEW_LED"
+echo $RED">$STD Version in use is $RED$VERS$STD last edited on $RED$LED$STD"
+echo $GRN">$STD Latest version is $GRN$NEW_VERS$STD last edited on $GRN$NEW_LED$STD"
 echo -n $GRN">$STD Update to latest ? y/N "$GRN
 read UPD1
 	if [[ "$UPD1" == "y" || "$UPD1" == "Y" ]] ; then 
@@ -1496,11 +1525,9 @@ f_menu
 ### TO DO
 ######### 
 # - Include test to see whether network in range of adapter's sending range (mdk3 p)
-# - Improve listing of networks with handshakes (4-2)
 # - Convert cap to hccap 
 # - Optimise code with functions to reduce size / improve performane
 # - Include option to alter save directory
 # - Write general help file / help file for each menu item
 # - Improve checking of monitor mode to allow names other than mon*
-
 
