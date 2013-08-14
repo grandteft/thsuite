@@ -8,6 +8,7 @@
   # https://code.google.com/p/thsuite/wiki/WirelessDisruption
 ----
 ----
+= THSuite Main Menu =
 http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite_main-menu_zps6f72cb71.png
 
 Menu based *bash* script to simplify the standard commands used
