@@ -1,4 +1,3 @@
-
 = THSuite =
 ----
 = THSuite Scans/Captures =
@@ -16,12 +15,10 @@ http://i94.photobucket.com/albums/l112/TAPE_RULEZ/83ed2f5b-9e7b-44c8-b4a1-b0dd0b
 Previous scans are listed as numbered .csv files and can be chosen by entering the corresponding number.
 ----
 On choosing the scan number, the associated .cap file will be checked for valid/usable handshakes using pyrit.
-----
-If valid handshakes are found, a list is generated with information on the network information for which a valid handshake found. 
+  If valid handshakes are found, a list is generated with information on the network information for which a valid handshake found. 
 ----
 An option is then given to strip out the handshakes for each listed network.
-----
-(Handshakes are stripped from .cap file and saved as /root/SSID.cap)
+  (Handshakes are stripped from .cap file and saved as /root/SSID.cap)
 ----
 == Option 3 - Strip ESSIDs / Probes to wordlist == 
 Previous scans are listed as numbered .csv files and can be chosen by entering the corresponding number, or *a* can be entered to strip ESSIDs/Probes.
@@ -44,4 +41,3 @@ If 1 is selected, then you will be prompted to select the corresponding numer to
 If 2 is selected all saved scans/captures will be deleted.
 ----
 http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-4-4a_zpsfc8d91b9.png
-
