@@ -1,0 +1,45 @@
+= THSuite =
+----
+= Manual and Assisted Handshake Acquisition =
+----
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-5_zps81bbbda8.png
+----
+There are 2 options;
+  # Enter network details manually
+  # Scan and choose from results
+== Option 1 - Enter network details manually ==
+
+When choosing option 1, you are prompted to enter required input;
+  * monitor interface
+  * target AP BSSID
+  * target AP channel
+  * target Client MAC
+You are then prompted to enter optional input (or hit Enter to use defaults);
+  * scantime duration (default: 15 seconds)
+  * monitor/injection interface to send deauth packets (default: same as scan interface)
+  * number of deauth packets to send (default: 5)
+  * wait time before sending deauth packets (default: 3 seconds)
+----
+  * airodump-ng then starts listening/capturing with the input as entered.
+  * aireplay-ng starts sending the specified number of packets (default 5) after the specified amount of waiting time (default 3 seconds)
+----
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/2c721de9-f649-418b-96c6-1e5ff9495b51_zps0b890273.jpg
+----
+On completion, if the attack went without errors, you will be prompted to check the handshake file. 
+
+
+
+
+
+== Option 2 - Scan and choose from scan results ==
+Scan assisted network acquisition
+----
+When choosing option 2, you are prompted to enter required input ; 
+  * 
+
+
+
+
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/55e4e8d8-fc82-4d94-aede-eca6fd63e88a_zps0d3ae029.jpg
+
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/18e8d42d-acb3-456c-9d4f-1786325c523e_zps172a3099.jpg
