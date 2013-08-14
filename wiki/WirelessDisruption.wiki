@@ -10,9 +10,7 @@ Work in progress..
 == Option 1 - Deny access to specified AP == 
 
 http://i94.photobucket.com/albums/l112/TAPE_RULEZ/020dee14-439b-4c2f-9dcf-757e110e5a49_zps14bd1937.jpg
-
 ----
-
 ----
 = Wiki Links =
   * https://code.google.com/p/thsuite/wiki/WIKIGeneral
@@ -21,3 +19,4 @@ http://i94.photobucket.com/albums/l112/TAPE_RULEZ/020dee14-439b-4c2f-9dcf-757e11
   # https://code.google.com/p/thsuite/wiki/WirelessScanning
   # https://code.google.com/p/thsuite/wiki/ViewScansCaptures
   # https://code.google.com/p/thsuite/wiki/ManualAssistedHandshakeAcquisition
+  # https://code.google.com/p/thsuite/wiki/WirelessDisruption
