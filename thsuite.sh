@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 14-08-2013 13:30
+#Last edit 14-08-2013 16:30
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -365,7 +365,7 @@ read RESTART
 	NetworkManager
 	sleep 1
 fi
-f_menu
+f_iface
 #
 fi
 }
@@ -1015,6 +1015,10 @@ CAPFILE="$THSDIR"wpa_temp-01.cap
 CSVFILE="$THSDIR"wpa_temp-01.csv 
 TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
 # Rename and move capture file
+#if [ "$TARGET_ESSID" == "" ] ; then
+#echo $RED">$STD Failed to get required data :("
+#f_menu
+#fi
 mv $CAPFILE $SAVEDIR"$TARGET_SSID".cap
 HANDSHAKE=$SAVEDIR"$TARGET_SSID".cap
 # tmp files deletion check
@@ -1524,15 +1528,16 @@ f_menu
 ##
 ### VERSION HISTORY
 ###################
-# v0.1 Released **-**-2013
+# v0.1 Released 14-08-2013
 #
 #
 ##
 ### TO DO
 ######### 
+# - ! Check for errors when deauth attack fails (5-1 / 5-2)
 # - Include test to see whether target network is in range of adapter's sending range (mdk3 p)
 # - Convert cap to hccap 
-# - Optimise code to reduce size / improve performane
+# - Optimise code to reduce size / improve performance
 # - Include option to alter save directory
 # - Write general help file / help file for each menu item
 # - Improve checking of monitor mode to allow names other than mon*
