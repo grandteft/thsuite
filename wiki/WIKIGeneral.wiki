@@ -2,7 +2,7 @@
 
 http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite_main-menu_zps6f72cb71.png
 
-Menu based bash script to simplify the standard commands used
+Menu based *bash* script to simplify the standard commands used
 when performing wireless auditing/reconnaissance.
 
 ----
@@ -23,7 +23,10 @@ Run script (from script location directory)
 {{{
 ./thsuite.sh
 }}}
-
+Or else run with
+{{{
+bash thsuite.sh
+}}}
 ----
 
 = General Usage = 
