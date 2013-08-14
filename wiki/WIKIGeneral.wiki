@@ -27,8 +27,15 @@ Run script (from script location directory)
 ----
 
 = General Usage = 
+On starting the script a temporary directory will be created (/root/TEMP_THS)
+----
 Enter an option from the main menu to take you to either a sub-menu or directly to the option chosen.
 
 
 ----
-More to come
+Wiki Links
+  # 
+  #
+  #
+  #
+  #
