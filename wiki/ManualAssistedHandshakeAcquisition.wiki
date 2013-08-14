@@ -16,7 +16,7 @@ When choosing option 1, you are prompted to enter required input;
   * target Client MAC
 You are then prompted to enter optional input (or hit Enter to use defaults);
   * scantime duration (default: 15 seconds)
-  * monitor/injection interface to send deauth packets (default: same as scan interface)
+  * monitor/injection interface to send deauth packets (default: same as listen interface)
   * number of deauth packets to send (default: 5)
   * wait time before sending deauth packets (default: 3 seconds)
 ----
