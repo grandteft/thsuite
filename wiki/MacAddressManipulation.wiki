@@ -1,0 +1,23 @@
+= THSuite =
+
+----
+
+= MAC address manipulation ==
+
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite1-2_zps478fb5ac.png
+
+----
+
+This option makes use of 'macchanger' to spoof or reset the MAC address of the chosen interface.
+
+----
+The options are ;
+  # Set random MAC
+  # Set specific MAC
+  # Reset original permanent MAC
+
+----
+
+When entering a specific MAC, you can use either of the below input methods;
+  * 00:11:22:33:44:55
+  * 00-11-22-33-44-55
