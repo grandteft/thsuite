@@ -22,8 +22,8 @@ An option is then given to strip out the handshakes for each listed network.
 ----
 == Option 3 - Strip ESSIDs / Probes to wordlist == 
 Previous scans are listed as numbered .csv files and can be chosen by entering the corresponding number, or *a* can be entered to strip ESSIDs/Probes.
-  *If individual file is chosen then the the file is named with the date and time of the THSuite scan.
-  *If *a* is chosen then the SSID wordlist is named with the date and time of creation.
+  * If individual file is chosen then the the file is named with the date and time of the THSuite scan.
+  * If *a* is chosen then the SSID wordlist is named with the date and time of creation.
 ----
 http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-4-3a_zps2fd7bcd4.png
 ----
@@ -34,9 +34,7 @@ Previous scans are listed as numbered .csv files
 There are 2 options;
   # Remove selected THSuite scan/capture
   # Remove all THSuite scans/captures
-----
-If 1 is selected, then you will be prompted to select the corresponding numer to delete files associated with that scan.
-----
-If 2 is selected all saved scans/captures will be deleted.
+  * If 1 is selected, then you will be prompted to select the corresponding numer to delete files associated with that scan.
+  * If 2 is selected all saved scans/captures will be deleted.
 ----
 http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-4-4a_zpsfc8d91b9.png
