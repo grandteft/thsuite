@@ -2,8 +2,6 @@
 ----
 = Wireless Scanning = 
 ----
-http://i94.photobucket.com/albums/l112/TAPE_RULEZ/5705cb40-5fd6-4c09-8095-2db667774538_zpsa1d47f0b.jpg
-----
 This option makes use of airodump-ng to scan for wireless networks.
 ----
 On selecting wireless scanning from the main menu, you are prompted to enter a monitor interface or warned if none exist.
@@ -15,4 +13,7 @@ You are then prompted to either enter scan settings or use the default settings;
 ----
 airodump-ng will then be opened in an xterm window which will either stop after the entered scan time, or if scan time was left as default, continue until stopped with Ctrl-C.
 ----
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/5705cb40-5fd6-4c09-8095-2db667774538_zpsa1d47f0b.jpg
+----
+
 Scan results will be saved as date-time files (ex. 20130101-1800-01.csv) in the /root/THS_TMP/ directory.
