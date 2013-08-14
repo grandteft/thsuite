@@ -10,7 +10,7 @@ On selecting wireless scanning from the main menu, you are prompted to enter a m
 ----
 You are then prompted to either enter scan settings or use the default settings;
   * Channel to scan on (default is all channels)
-- If you chose the default, scanning on all channels, you will be prompted for a channel hop delay in seconds or skip (hit Enter) to use airodump-ng's default.
+- If you chose the default(scanning on all channels), you will be prompted for a channel hop delay in seconds or skip (hit Enter) to use airodump-ng's default.
   * Scan time (default is no limit)
 ----
 airodump-ng will then be opened in an xterm window which will either stop after the entered scan time, or if scan time was left as default, continue until stopped with Ctrl-C.
