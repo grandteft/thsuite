@@ -1,0 +1,37 @@
+= THSuite =
+----
+= Wireless Interfaces = 
+
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-1-1_zpsc9856f21.png
+
+----
+
+== Option 1 - Create a monitor interface ==
+This options makes use of airmon-ng to create monitor interfaces.
+If the option is chosen to kill processes that may affect performance, then networking services will be killed.
+The default is to not kill any processes.
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-1-1a_zpsb2c0cbc7.png
+
+== Option 2 - Stop all monitor interfaces ==
+This option makes use of airmon-ng to stop existing monitor interfaces.
+
+== Option 3 - Put all interfaces 'down' ==
+This option makes use of ifconfig to deactivating existing interfaces.
+
+== Option 4 - View/Alter TX power settings ==
+This option makes use of iw & iwconfig to view and attempt to alter settings.
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-1-4_zps402095c4.png
+
+----
+
+You can choose to alter the country code settings by entering the desired 2-letter ISO3166 alpha-2 code, or skip.
+You can also try to alter the TX power settings for a chosen wireless interface, this may or may not work depending on the card.
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-1-4a_zps928066a9.png
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-1-4b_zpsbe9ee51b.png
+
+----
+== Option 5 - Attempt to restart network services ==
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-1-5_zpsda51e021.png
+----
+If during the creation process of a monitor interface it was chosen to kill processes that may affect performance, network processes and services would have been killed.
+This option attempts to restart services / processes to get network connectivity back.
