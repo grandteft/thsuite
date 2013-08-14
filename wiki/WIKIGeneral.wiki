@@ -38,3 +38,12 @@ On starting the script a temporary directory will be created (/root/TEMP_THS)
 ----
 Enter an option from the main menu to take you to either a sub-menu or directly to the option chosen.
 ----
+----
+= Wiki Links =
+  * https://code.google.com/p/thsuite/wiki/WIKIGeneral
+  # https://code.google.com/p/thsuite/wiki/WirelessInterfaces
+  # https://code.google.com/p/thsuite/wiki/MacAddressManipulation
+  # https://code.google.com/p/thsuite/wiki/WirelessScanning
+  # https://code.google.com/p/thsuite/wiki/ViewScansCaptures
+  # https://code.google.com/p/thsuite/wiki/ManualAssistedHandshakeAcquisition
+  # https://code.google.com/p/thsuite/wiki/WirelessDisruption
