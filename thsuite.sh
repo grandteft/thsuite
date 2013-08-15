@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.1
 #By TAPE
-#Last edit 14-08-2013 16:30
+#Last edit 16-08-2013 00:30
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -61,7 +61,7 @@ clear
 f_header
 echo $STD"  By TAPE"
 echo $STD
-echo $STD"THSuite $GRN$VERS$STD Last edited $GRN$LED$STD
+echo $STD"THSuite $GRN$VERS$STD Last edit $GRN$LED$STD
 
 Written for the THS crew at www.top-hat-sec.com
 Enjoy Guyz & Galz ;)" 
@@ -77,6 +77,7 @@ rm -rf /root/THS_TMP/pyrit_cap_analyze.tmp
 rm -rf /root/THS_TMP/csvfile_ap.tmp
 rm -rf /root/THS_TMP/csvfile_cl.tmp
 rm -rf /root/THS_TMP/wpa_temp*
+rm -rf /root/THS_TMP/scan_temp*
 rm -rf /root/THS_TMP/scan_assist.tmp
 rm -rf /root/THS_TMP/ssid_list.tmp
 rm -rf /root/THS_TMP/trash.tmp
@@ -200,12 +201,12 @@ f_iface_stat
 echo $STD""
 echo -ne $GRN">$STD Enter interface to create a monitor interface on: $GRN"
 read IFACE
-if [ "$IFACE" == "" ] ; then f_menu ; fi
+if [ "$IFACE" == "" ] ; then f_iface ; fi
 while ! airmon-ng | sed "0,/Interface/d" | cut -f 1 | grep -Fxq $IFACE
 do echo $RED">$STD Interface error $RED[$STD$IFACE$RED]$STD Interface does not exist."
 echo -ne $GRN">$STD Enter interface to create a monitor interface on: $GRN"
 read IFACE
-if [ "$IFACE" == "" ] ; then f_menu ; fi
+if [ "$IFACE" == "" ] ; then f_iface ; fi
 done
 if [[ "$IFACE" =~ "wlan" ]] ; then
 MODE=$(iwconfig $IFACE | grep -i Mode | awk -F " " '{print $1}' | sed 's/Mode://')
@@ -306,12 +307,12 @@ done
 	iw reg set $COUNED
 echo -ne $GRN">$STD Enter interface to alter power setting on: $GRN"
 read IFACE
-if [ "$IFACE" == "" ] ; then f_menu ; else
+if [ "$IFACE" == "" ] ; then f_iface ; else
 	while ! airmon-ng | sed "0,/Interface/d" | cut -f 1 | grep -Fxq $IFACE ; do
 	echo $RED">$STD Interface error $RED[$STD$IFACE$RED]$STD Interface does not exist."
 	echo -ne $GRN">$STD Enter interface to alter power setting on: $GRN"
 	read IFACE
-	if [ "$IFACE" == "" ] ; then f_menu ; fi
+	if [ "$IFACE" == "" ] ; then f_iface ; fi
 	done
 fi
 	echo -ne $GRN">$STD Enter desired power setting: $GRN"
@@ -728,7 +729,7 @@ sed -i '1d' $FILENAME
 echo $GRN">$STD SSID wordlist $GRN$FILENAME$STD created"
 fi
 echo -n $STD"
-Hit Enter to continue"
+Hit any key to continue "
 read
 f_list_wireless
 #
@@ -788,7 +789,8 @@ read LISTF
 	for i in $(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed 's/.\{4\}$//') ; do
 	rm "$i"*
 	done
-	sleep 1
+	echo $GRN">$STD All files removed, hit any key to continue "
+	read
 	f_menu
 	fi
 #
@@ -878,7 +880,7 @@ f_mon_check
 echo $BLU"
 OPTIONS$STD
 1  Enter network details manually
-2  Scan and choose from scan results
+2  Scan assisted network detail acquisition
 Q  Back to main menu"
 echo $STD
 echo -n $STD"Enter choice from above menu: $GRN"
@@ -1014,11 +1016,6 @@ sleep $WAIT && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0
 CAPFILE="$THSDIR"wpa_temp-01.cap
 CSVFILE="$THSDIR"wpa_temp-01.csv 
 TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
-# Rename and move capture file
-#if [ "$TARGET_ESSID" == "" ] ; then
-#echo $RED">$STD Failed to get required data :("
-#f_menu
-#fi
 mv $CAPFILE $SAVEDIR"$TARGET_SSID".cap
 HANDSHAKE=$SAVEDIR"$TARGET_SSID".cap
 # tmp files deletion check
@@ -1040,11 +1037,12 @@ fi
 elif [ "$FORCE_MENU" == "2" ] ; then 
 clear
 f_header
-echo $BLU">$STD Assisted acquisition of handshake(s)"
+echo $BLU">$STD Scan for associated clients"
 echo $STD
 echo $STD"Available interface(s);"
 f_iface_stat
 echo $STD
+echo $BLUN"Required Input"$STD
 echo -ne $GRN">$STD Enter monitor interface to scan with: $GRN"
 read IFACE
 	if [ "$IFACE" == "" ] ; then f_force_wpa ; fi
@@ -1083,20 +1081,20 @@ echo -ne $GRN">$STD Enter scan time (default: no limit): $GRN"
 read SCAN
 
 if [[ "$CHAN" != "" && "$SCAN" != "" ]] ; then
-timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/wpa_temp
+timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/scan_temp
 elif [[ "$CHAN" != "" && "$SCAN" == "" ]] ; then
 echo $STD"Ctrl-C on xterm window to stop scan"
-xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/wpa_temp
+xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -c $CHAN -w /root/THS_TMP/scan_temp
 elif [[ "$CHAN" == "" && "$SCAN" == "" && "$HOP" == "" ]] ; then
 echo $STD"Ctrl-C on xterm window to stop scan"
-xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/wpa_temp
+xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/scan_temp
 elif [[ "$CHAN" == "" && "$SCAN" != "" && "$HOP" == "" ]] ; then
-timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/wpa_temp
+timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -w /root/THS_TMP/scan_temp
 elif [[ "$CHAN" == "" && "$SCAN" != "" && "$HOP" != "" ]] ; then
-timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/wpa_temp
+timeout $SCAN xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/scan_temp
 elif [[ "$CHAN" == "" && "$SCAN" == "" && "$HOP" != "" ]] ; then
 echo $STD"Ctrl-C on xterm window to stop scan"
-xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/wpa_temp
+xterm -T "THSuite" -geometry 105x36-0+0 -e airodump-ng $IFACE -f $HOP -w /root/THS_TMP/scan_temp
 fi
 echo $STD
 echo $GRN">$STD Scan completed"
@@ -1108,7 +1106,7 @@ f_header
 echo $BLU">$STD Assisted acquisition of handshake(s)"
 echo $STD
 echo $GRN">$STD Parsing scan results.."
-CSVFILE="/root/THS_TMP/wpa_temp-01.csv"
+CSVFILE="/root/THS_TMP/scan_temp-01.csv"
 cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | awk -F , '{print $1, $14}' > /root/THS_TMP/csvfile_ap.tmp
 cat $CSVFILE | sed '0,/Station MAC/d' | sed '/(not associated)/d' | awk -F , '{print $1,$6}' > /root/THS_TMP/csvfile_cl.tmp
 awk 'NR==FNR {A[$1]=$2; next} {print $2,$1,A[$2]}' /root/THS_TMP/csvfile_ap.tmp /root/THS_TMP/csvfile_cl.tmp > /root/THS_TMP/scan_assist.tmp
@@ -1178,13 +1176,15 @@ iwconfig $DIFACE channel $TARGET_CHAN
 sleep 0.5
 fi
 echo $GRN">$STD Attempting to force & capture handshake"
-NAME=$(echo $TARGET_AP | sed 's/:/-/g')
-FILENAME="HANDSHAKE-$NAME"
 sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
-& timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
+& timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w "$THSDIR"wpa_temp
 #
 echo $GRN">$STD Deauth attempt on target AP complete"
 sleep 1
+#Rename capture file 
+CAPFILE="$THSDIR"wpa_temp-01.cap
+mv $CAPFILE $SAVEDIR"$TARGET_SSID".cap
+HANDSHAKE=$SAVEDIR"$TARGET_SSID".cap
 #
 else
 #Using same interface for scanning and deauthing
@@ -1194,17 +1194,15 @@ TARGET_CL=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print
 TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
 #
 echo $GRN">$STD Attempting to force & capture handshake"
-NAME=$(echo $TARGET_AP | sed 's/:/-/g')
-FILENAME="TEMP-$NAME"
 sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $IFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
-& timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w $SAVEDIR$FILENAME
+& timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w "$THSDIR"wpa_temp
 #
 echo $GRN">$STD Deauth attempt on target AP complete"
 sleep 1
 #Rename capture file 
-HS_NAME=$(echo $TARGET_SSID)
-mv $SAVEDIR"$FILENAME"* $SAVEDIR"$HS_NAME".cap
-HANDSHAKE=$SAVEDIR"$HS_NAME".cap
+CAPFILE="$THSDIR"wpa_temp-01.cap
+mv $CAPFILE $SAVEDIR"$TARGET_SSID".cap
+HANDSHAKE=$SAVEDIR"$TARGET_SSID".cap
 # tmp files deletion check
 	if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
 	if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
@@ -1294,7 +1292,7 @@ echo $BLU">$STD Wireless disruption"
 echo $STD""
 echo $RED"  WARNING! These functions can wreak havoc on wireless networks"
 echo $RED"          Use with care on authorized networks only"
-#sleep 3
+sleep 2
 echo $BLU"
 OPTIONS $STD
 1  Deny access to specified AP
@@ -1467,7 +1465,7 @@ Menu based script to simplify the standard commands used
 when performing wireless auditing/reconnaissance.
 
 WIKI on THSuite can be found at:
-www.code.google.com/p/thsuite/w/list"
+http://code.google.com/p/thsuite/"
 echo $STD"
 Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 Tested on both with some options performing better on Kali"
@@ -1489,7 +1487,7 @@ cat << !
 2  MAC address manipulation
 3  Wireless Scanning
 4  View previous scans/captures
-5  Manual & assisted handshake acquisition
+5  Forced handshake acquisition
 6  Wireless network disruption 
 
 h  help info
@@ -1522,23 +1520,35 @@ done
 ##
 ### START SCRIPT
 ################
-f_menu
 
+if [ $# -ne 0 ]; then
+while getopts ":o:" opt; do
+  case $opt in
+	o) SAVEDIR=$OPTARG ;;
+  esac
+done
+f_menu
+else
+f_menu
+fi
 #
 ##
 ### VERSION HISTORY
 ###################
 # v0.1 Released 14-08-2013
-#
+# v0.2 Released **-08-2013
+# - Made some minor alterations to menu names (option 5).
+# - Made Enter in menu 1 sub-menu return to menu 1 instead of main menu
+# - Altered the save name for files when doing scan for associated clients (5-2)
+# - Included a switch 'o' which you can run on thsuite to alter save directory.
+#   ( ./thsuite.sh -o your_chosen_directory )
 #
 ##
 ### TO DO
 ######### 
-# - ! Check for errors when deauth attack fails (5-1 / 5-2)
+# - ! Check for errors when deauth attack fails (5-1 / 5-2) to avoid unexpected errors.
+# - Change file deletion to incluce 'a' for all files instead of seperate menu.
 # - Include test to see whether target network is in range of adapter's sending range (mdk3 p)
 # - Convert cap to hccap 
 # - Optimise code to reduce size / improve performance
-# - Include option to alter save directory
-# - Write general help file / help file for each menu item
 # - Improve checking of monitor mode to allow names other than mon*
-
