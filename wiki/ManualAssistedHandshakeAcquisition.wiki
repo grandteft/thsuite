@@ -50,6 +50,7 @@ airodump-ng will then start in at xterm window scanning with the details provide
 http://i94.photobucket.com/albums/l112/TAPE_RULEZ/55e4e8d8-fc82-4d94-aede-eca6fd63e88a_zps0d3ae029.jpg
 ----
 On completion of the scan a numbered list will be shown of all networks found with connected clients.
+----
 http://i94.photobucket.com/albums/l112/TAPE_RULEZ/4076985e-f173-42bd-a19f-9aabb9e4f488_zps82475627.jpg
 ----
 After choosing which you want to attack, airodump-ng is started and 3 seconds later aireplay starts and sends 5 deauth packets to the selected Client MAC.
