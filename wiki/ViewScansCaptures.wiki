@@ -22,7 +22,7 @@ An option is then given to strip out the handshakes for each listed network.
   (Handshakes are stripped from .cap file and saved as /root/SSID.cap)
 ----
 == Option 3 - Strip ESSIDs / Probes to wordlist == 
-Previous scans are listed as numbered .csv files and can be chosen by entering the corresponding number, or *a* can be entered to strip ESSIDs/Probes.
+Previous scans are listed as numbered .csv files and can be chosen by entering the corresponding number, or *a* can be entered to strip ESSIDs/Probes from all scans.
   * If individual file is chosen then the the file is named with the date and time of the THSuite scan.
   * If *a* is chosen then the SSID wordlist is named with the date and time of creation.
 ----
