@@ -46,3 +46,4 @@ This option attempts to restart services / processes to get network connectivity
   # https://code.google.com/p/thsuite/wiki/ViewScansCaptures
   # https://code.google.com/p/thsuite/wiki/ManualAssistedHandshakeAcquisition
   # https://code.google.com/p/thsuite/wiki/WirelessDisruption
+  # https://code.google.com/p/thsuite/wiki/Miscellaneous
