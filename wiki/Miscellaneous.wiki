@@ -22,3 +22,4 @@ http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-m2_zpsee028d80.png
   # https://code.google.com/p/thsuite/wiki/ViewScansCaptures
   # https://code.google.com/p/thsuite/wiki/ManualAssistedHandshakeAcquisition
   # https://code.google.com/p/thsuite/wiki/WirelessDisruption
+  # https://code.google.com/p/thsuite/wiki/Miscellaneous
