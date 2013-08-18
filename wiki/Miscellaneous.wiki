@@ -1,0 +1,17 @@
+= THSuite =
+----
+----
+= Miscellaneous options = 
+----
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-m_zps17112aff.png
+----
+== Option 1 - Convert .cap to .hccap == 
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-m1_zpsb7ebe08f.png
+----
+== Option 2 - Test whether a network is in sending/injection range == 
+----
+http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-m2_zpsee028d80.png
+----
+----
+= Wiki Links =
+----
