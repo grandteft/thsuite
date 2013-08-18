@@ -21,6 +21,7 @@ Scan results will be saved as date-time files (ex. 20130101-1800-01.csv) in the 
 ----
 ----
 = Wiki Links =
+----
   * https://code.google.com/p/thsuite/wiki/WIKIGeneral
   # https://code.google.com/p/thsuite/wiki/WirelessInterfaces
   # https://code.google.com/p/thsuite/wiki/MacAddressManipulation
@@ -28,3 +29,4 @@ Scan results will be saved as date-time files (ex. 20130101-1800-01.csv) in the 
   # https://code.google.com/p/thsuite/wiki/ViewScansCaptures
   # https://code.google.com/p/thsuite/wiki/ManualAssistedHandshakeAcquisition
   # https://code.google.com/p/thsuite/wiki/WirelessDisruption
+  # https://code.google.com/p/thsuite/wiki/Miscellaneous
