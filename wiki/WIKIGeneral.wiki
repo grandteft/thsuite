@@ -47,4 +47,4 @@ Enter an option from the main menu to take you to either a sub-menu or directly 
   # https://code.google.com/p/thsuite/wiki/ViewScansCaptures
   # https://code.google.com/p/thsuite/wiki/ManualAssistedHandshakeAcquisition
   # https://code.google.com/p/thsuite/wiki/WirelessDisruption
-  m http://code.google.com/p/thsuite/wiki/Miscellaneous
+  # https://code.google.com/p/thsuite/wiki/Miscellaneous
