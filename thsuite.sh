@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.2
 #By TAPE
-#Last edit 18-08-2013 16:00
+#Last edit 18-08-2013 16:30
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -754,7 +754,8 @@ read LISTF
 	REMFILE=$(ls -t /root/THS_TMP/*.csv | grep -v kismet.csv | sed 's/.\{4\}$//' | sed -n "$LISTF p")
 	echo $GRN">$STD Removing $GRNN$REMFILE*$STD"
 	rm -rf "$REMFILE"*
-	echo -n $GRN">$STD $GRNN$REMFILE*$STD removed, hit Enter to continue "
+	echo $GRN">$STD $GRNN$REMFILE*$STD removed"
+	echo -n $STD"hit Enter to continue "
 	read
 	f_menu
 	fi
