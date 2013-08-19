@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.2
 #By TAPE
-#Last edit 18-08-2013 16:30
+#Last edit 19-08-2013 19:00
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -1377,7 +1377,8 @@ f_clean
 f_header
 echo $BLU">$STD Flood area with fake AP beacons"
 echo $STD
-echo $BLUN"Optional Input(hit Enter for defaults)"
+echo $BLUN"Optional Input(hit Enter for defaults)
+Defaults: Channel=All, Enc=OPN, SSID:BooYah"
 # Channel of fake AP
 echo -n $GRN">$STD Enter channel: $GRN"
 read CHAN
@@ -1387,15 +1388,15 @@ echo -n $GRN">$STD Enter channel: $GRN"
 read CHAN
 done
 # Encryption setting of fake AP
-echo -n $GRN">$STD Enter encryption type (WEP, WPA): $GRN"
+echo -n $GRN">$STD Enter encryption type (OPN, WEP, WPA): $GRN"
 read ENC
 ENC=$(echo $ENC | tr '[:lower:]' '[:upper:]')
-if [ "$ENC" == "" ] ; then ENC="WPA" ; fi
-	while [ "$ENC" != "WEP" ] && [ "$ENC" != "WPA" ] && [ "$ENC" != "" ] ; do
+if [ "$ENC" == "" ] ; then ENC="OPN" ; fi
+	while [ "$ENC" != "OPN" ] && [ "$ENC" != "WEP" ] && [ "$ENC" != "WPA" ] && [ "$ENC" != "" ] ; do
 	echo -n $RED">$STD Input error, enter WEP or WPA: $GRN"
 	read ENC
 	ENC=$(echo $ENC | tr '[:lower:]' '[:upper:]')
-	if [ "$ENC" == "" ] ; then ENC="WPA" ; fi
+	if [ "$ENC" == "" ] ; then ENC="OPN" ; fi
 	done
 
 #
@@ -1408,13 +1409,29 @@ read SSID
 if [ "$SSID" == "" ] ; then SSID=BooYah ; fi
 #
 if [ ! -e "$SSID" ]  && [ "$CHAN" == "" ] ; then
-xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -n $SSID
+	if [ "$ENC" == "OPN" ] ; then
+	xterm -geometry -0+0 -e mdk3 $IFACE b -m -h -n $SSID
+	else
+	xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -n $SSID
+	fi
 elif [ ! -e "$SSID" ]  && [ "$CHAN" != "" ] ; then
-xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -c $CHAN -n $SSID
+	if [ "$ENC" == "OPN" ] ; then
+	xterm -geometry -0+0 -e mdk3 $IFACE b -m -h -c $CHAN -n $SSID
+	else
+	xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -c $CHAN -n $SSID
+	fi
 elif [ -e "$SSID" ]  && [ "$CHAN" == "" ] ; then
-xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -f $SSID
+	if [ "$ENC" == "OPN" ] ; then
+	xterm -geometry -0+0 -e mdk3 $IFACE b -m -h -f $SSID
+	else
+	xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -f $SSID
+	fi
 elif [ -e "$SSID" ]  && [ "$CHAN" != "" ] ; then
-xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -c $CHAN -f $SSID
+	if [ "$ENC" == "OPN" ] ; then
+	xterm -geometry -0+0 -e mdk3 $IFACE b -m -h -c $CHAN -f $SSID
+	else
+	xterm -geometry -0+0 -e mdk3 $IFACE b $SWITCH -m -h -c $CHAN -f $SSID
+	fi
 fi
 f_wireless_disruption
 }
@@ -1674,7 +1691,9 @@ fi
 #   * Included test to see whether target network is in range of adapter's sending range (mdk3 p)
 # - Included fake AP generation option in Wireless Disruption.
 # - Removed works in progress from Wireless Disruption menu
-
+# EDIT 19-08-2013
+# - Included OPN network option on Wireless Disruption beacon flood function
+#
 #
 ##
 ### TO DO
@@ -1683,4 +1702,5 @@ fi
 # - ? Check for errors when deauth attack fails (5-1 / 5-2) to avoid unexpected errors (waiting for bug reports).
 # - ? Improve checking of monitor mode to allow names other than mon* (waiting for advice after more usage).
 # - ? Increase wireless disruption capabilities.
+
 
