@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.2
 #By TAPE
-#Last edit 19-08-2013 19:00
+#Last edit 19-08-2013 20:15
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -1525,6 +1525,7 @@ echo $BLU"
 OPTIONS$STD
 1  Convert .cap to .hccap (for use with Hashcat)
 2  Test whether a network is in sending/injection range
+3  Attempt to restart networking services
 Q  Back to main menu
 "
 echo -ne "Enter choice from above menu: "$GRN
@@ -1533,12 +1534,14 @@ read MISC_MENU
 	echo $STD""
 	f_menu
 	elif [ "$MISC_MENU" == "" ] ; then f_menu
-	elif [[ "$MISC_MENU" != [1-2] ]]; then
+	elif [[ "$MISC_MENU" != [1-3] ]]; then
 	echo $RED">$STD Input error $RED[$STD$MISC_MENU$RED]$STD must be an entry from the above menu"$STD
 	sleep 1
 	f_misc
 	fi
 # Option 1
+# Convert .cap to .hcaap 
+# ----------------------
 if [ "$MISC_MENU" == "1" ] ; then 
 clear
 f_header
@@ -1563,6 +1566,8 @@ read ENTER
 if [ "$ENTER" == "q" ] || [ "$ENTER" == "Q" ] ; then f_menu ; fi
 
 # Option 2
+# Probe network SSID
+# ------------------
 elif [ "$MISC_MENU" == "2" ] ; then 
 clear
 f_header
@@ -1603,10 +1608,29 @@ if [ "$CHAN" == "" ] ; then f_misc ; fi
 echo $RED">$STD Input error $RED[$STD$CHAN$RED]$STD Must be valid channel number" 
 echo -n $GRN">$STD Enter channel: $GRN"
 done
-
 echo $GRN">$STD Probing SSID $GRN$SSID$STD"
-echo -n $STD"Ctrl-C to quit the probing"
+echo -n $STD"Ctrl-C to quit the probing "
 xterm -T THSuite -geometry -0+0 -e mdk3 $IFACE p -c $CHAN -e $SSID
+#
+# Option 3
+# Restart network services
+# ------------------------
+elif [ "$MISC_MENU" == "3" ] ; then 
+echo $BLUN"
+If you chose to kill processes that may affect performance during monitor
+interface creation, this will have killed your networking services."
+echo $STD
+echo -n $GRN">$STD Attempt to restart networking processes / services? y/N $GRN"
+read SERVRESTART
+	if [[ "$SERVRESTART" == "y" || "$SERVRESTART" == "Y" ]] ; then
+	echo $GRN">$STD Here we go.."
+	/etc/init.d/networking start
+	sleep 1.5
+	service network-manager start
+	sleep 1.5
+	NetworkManager
+	sleep 1
+	fi
 fi
 f_misc
 }
@@ -1693,7 +1717,7 @@ fi
 # - Removed works in progress from Wireless Disruption menu
 # EDIT 19-08-2013
 # - Included OPN network option on Wireless Disruption beacon flood function
-#
+# - Included the Network Restart attemp in Miscellaneous menu as well (so can run without wireless devices)
 #
 ##
 ### TO DO
