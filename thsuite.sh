@@ -2,7 +2,7 @@
 #THS Wireless Suite
 #thsuite.sh v0.2
 #By TAPE
-#Last edit 22-08-2013 23:30
+#Last edit 23-10-2013 21:30
 #Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 #Tested on both with some options performing better on Kali
 #Source: http://thsuite.googlecode.com/svn/thsuite.sh
@@ -65,7 +65,10 @@ echo $STD"THSuite $GRN$VERS$STD Last edit $GRN$LED$STD
 
 Written for the THS crew at www.top-hat-sec.com
 Enjoy Guyz & Galz ;)" 
-f_exit
+echo 
+echo -n "Hit Enter to continue "
+read
+f_menu
 }
 #
 ##
@@ -1466,8 +1469,10 @@ echo $GRN">$STD Checking Internet connection.."
 wget -q --tries=10 --timeout=5 http://www.google.com -O /tmp/index.google &> /dev/null
 	if [ ! -s /tmp/index.google ];then
 	echo $RED">$STD No internet connection found..$STD"
-	sleep 1
-	f_exit
+	echo 
+	echo -n "Hit Enter to continue "
+	read
+	f_menu
 	fi
 echo $GRN">$STD Getting info on latest available version.."
 NEW_VERS=$(curl -s http://thsuite.googlecode.com/svn/thsuite.sh | sed -n 3p | awk '{print $2}')
@@ -1478,7 +1483,7 @@ echo $RED">$STD Version in use is $RED$VERS$STD last edited on $RED$LED$STD"
 echo $GRN">$STD Latest version is $GRN$NEW_VERS$STD last edited on $GRN$NEW_LED$STD"
 echo -n $GRN">$STD Update to latest ? y/N "$GRN
 read UPD1
-	if [[ "$UPD1" == "y" || "$UPD1" == "Y" ]] ; then 
+		if [[ "$UPD1" == "y" || "$UPD1" == "Y" ]] ; then 
 		echo $GRN">$STD Downloading latest version.."
 		wget -q http://thsuite.googlecode.com/svn/thsuite.sh -O $LOC/thsuite.tmp
 		chmod +x $LOC/thsuite.tmp
@@ -1489,12 +1494,17 @@ read UPD1
 		echo $GRN">$STD Please restart$GRN thsuite.sh$STD"
 		f_exit
 		else
-		f_exit
+		echo 
+		echo -n $STD"Hit Enter to continue "
+		read
+		f_menu
 		fi
-	elif [ "$VERS" == "$NEW_VERS" ] ; then
+elif [ "$VERS" == "$NEW_VERS" ] ; then
 	echo $GRN">$STD Current version in use $GRN$VERS$STD is the latest version available."
-	sleep 1
-	f_exit
+	echo 
+	echo -n $STD "Hit Enter to continue "
+	read
+	f_menu
 	fi
 f_exit
 }
@@ -1515,7 +1525,10 @@ http://code.google.com/p/thsuite/"
 echo $STD"
 Written on THS-OS v3 (CR4CK3RB0X) and Kali Linux
 Tested on both with some options performing better on Kali"
-f_exit
+echo 
+echo -n "Hit Enter to continue "
+read
+f_menu
 }
 #
 ##
@@ -1726,6 +1739,8 @@ fi
 # EDIT 22-08-2013
 # - Fixed a bug when scans not being correctly read for automatic handshake grabbing
 #   (grep -a) 
+# EDIT 23-10-2013
+# - Edited help / version and update section (if not updating) to not quit but to go to main menu. 
 # 
 ##
 ### TO DO
