@@ -1,0 +1,70 @@
+# THSuite #
+
+---
+
+
+---
+
+# THSuite Main Menu #
+![http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-mainmenu_zps08de54ac.png](http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-mainmenu_zps08de54ac.png)
+
+---
+
+Menu based **bash** script to simplify the standard commands used
+when performing wireless auditing/reconnaissance.
+
+
+---
+
+Intended for use on PenTest distros such as THS-OS / Kali Linux
+
+---
+
+**The script needs to be run as root**
+
+---
+
+# Installation #
+
+No real installation needed.
+Just download the script to a directory of your choice (for instance /root/)
+```
+wget -q http://thsuite.googlecode.com/svn/thsuite.sh -O /root/thsuite.sh
+```
+For ease of use best to make executable with chmod
+```
+chmod +x /root/thsuite.sh
+```
+Run script (from script location directory)
+```
+./thsuite.sh
+```
+Or else run with
+```
+bash thsuite.sh
+```
+
+---
+
+
+# General Usage #
+On starting the script a temporary directory will be created (/root/TEMP\_THS)
+
+---
+
+Enter an option from the main menu to take you to either a sub-menu or directly to the option chosen.
+
+---
+
+
+---
+
+# Wiki Links #
+  * https://code.google.com/p/thsuite/wiki/WIKIGeneral
+  1. https://code.google.com/p/thsuite/wiki/WirelessInterfaces
+  1. https://code.google.com/p/thsuite/wiki/MacAddressManipulation
+  1. https://code.google.com/p/thsuite/wiki/WirelessScanning
+  1. https://code.google.com/p/thsuite/wiki/ViewScansCaptures
+  1. https://code.google.com/p/thsuite/wiki/ManualAssistedHandshakeAcquisition
+  1. https://code.google.com/p/thsuite/wiki/WirelessDisruption
+  1. https://code.google.com/p/thsuite/wiki/Miscellaneous

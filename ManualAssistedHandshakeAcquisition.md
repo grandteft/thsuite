@@ -1,0 +1,111 @@
+# THSuite #
+
+---
+
+# Manual and Assisted Handshake Acquisition #
+
+---
+
+![http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-5_zps81bbbda8.png](http://i94.photobucket.com/albums/l112/TAPE_RULEZ/thsuite-5_zps81bbbda8.png)
+
+---
+
+There are 2 options;
+  1. Enter network details manually
+  1. Scan and choose from results
+## Option 1 - Enter network details manually ##
+
+When choosing option 1, you are prompted to enter required input;
+  * monitor interface
+  * target AP BSSID
+  * target AP channel
+  * target Client MAC
+You are then prompted to enter optional input (or hit Enter to use defaults);
+  * scantime duration (default: 15 seconds)
+  * monitor/injection interface to send deauth packets (default: same as listen interface)
+  * number of deauth packets to send (default: 5)
+  * wait time before sending deauth packets (default: 3 seconds)
+
+---
+
+  * airodump-ng then starts listening/capturing with the input as entered.
+  * aireplay-ng starts sending the specified number of packets (default 5) after the specified amount of waiting time (default 3 seconds)
+
+---
+
+![http://i94.photobucket.com/albums/l112/TAPE_RULEZ/2c721de9-f649-418b-96c6-1e5ff9495b51_zps0b890273.jpg](http://i94.photobucket.com/albums/l112/TAPE_RULEZ/2c721de9-f649-418b-96c6-1e5ff9495b51_zps0b890273.jpg)
+
+---
+
+On completion, if the attack went without errors, you will be prompted to check the handshake file.
+
+---
+
+![http://i94.photobucket.com/albums/l112/TAPE_RULEZ/68559a5c-9fe0-48f1-86fa-62536c26fccc_zps16100cfb.jpg](http://i94.photobucket.com/albums/l112/TAPE_RULEZ/68559a5c-9fe0-48f1-86fa-62536c26fccc_zps16100cfb.jpg)
+
+---
+
+Handshakes can then be tested with either ;
+  1. aircrack-ng
+  1. cowpatty (v4.6 required)
+  1. pyrit
+
+![http://i94.photobucket.com/albums/l112/TAPE_RULEZ/34627a02-b4bf-44cc-a4c5-2753d7667772_zpse28af0e0.jpg](http://i94.photobucket.com/albums/l112/TAPE_RULEZ/34627a02-b4bf-44cc-a4c5-2753d7667772_zpse28af0e0.jpg)
+
+---
+
+
+## Option 2 - Scan and choose from scan results ##
+Scan assisted network acquisition
+
+---
+
+When choosing option 2, you are prompted to enter required input ;
+  * monitor interface
+Then you are prompted to enter optional input;
+  * Channel to scan on (default is all channels)
+  * Scan time (default is unlimited
+airodump-ng will then start in at xterm window scanning with the details provided.
+
+---
+
+![http://i94.photobucket.com/albums/l112/TAPE_RULEZ/55e4e8d8-fc82-4d94-aede-eca6fd63e88a_zps0d3ae029.jpg](http://i94.photobucket.com/albums/l112/TAPE_RULEZ/55e4e8d8-fc82-4d94-aede-eca6fd63e88a_zps0d3ae029.jpg)
+
+---
+
+On completion of the scan a numbered list will be shown of all networks found with connected clients;
+
+---
+
+![http://i94.photobucket.com/albums/l112/TAPE_RULEZ/4076985e-f173-42bd-a19f-9aabb9e4f488_zps82475627.jpg](http://i94.photobucket.com/albums/l112/TAPE_RULEZ/4076985e-f173-42bd-a19f-9aabb9e4f488_zps82475627.jpg)
+
+---
+
+After choosing which you want to attack, airodump-ng is started and 3 seconds later aireplay starts and sends 5 deauth packets to the selected Client MAC;
+
+---
+
+![http://i94.photobucket.com/albums/l112/TAPE_RULEZ/b20f75c2-ac49-477c-af9c-8b9bf5e57638_zps5dc77156.jpg](http://i94.photobucket.com/albums/l112/TAPE_RULEZ/b20f75c2-ac49-477c-af9c-8b9bf5e57638_zps5dc77156.jpg)
+
+---
+
+On completion, as with option 1, you are prompted to check the capture file for valid handhakes;
+
+---
+
+![http://i94.photobucket.com/albums/l112/TAPE_RULEZ/18e8d42d-acb3-456c-9d4f-1786325c523e_zps172a3099.jpg](http://i94.photobucket.com/albums/l112/TAPE_RULEZ/18e8d42d-acb3-456c-9d4f-1786325c523e_zps172a3099.jpg)
+
+---
+
+
+---
+
+# Wiki Links #
+  * https://code.google.com/p/thsuite/wiki/WIKIGeneral
+  1. https://code.google.com/p/thsuite/wiki/WirelessInterfaces
+  1. https://code.google.com/p/thsuite/wiki/MacAddressManipulation
+  1. https://code.google.com/p/thsuite/wiki/WirelessScanning
+  1. https://code.google.com/p/thsuite/wiki/ViewScansCaptures
+  1. https://code.google.com/p/thsuite/wiki/ManualAssistedHandshakeAcquisition
+  1. https://code.google.com/p/thsuite/wiki/WirelessDisruption
+  1. https://code.google.com/p/thsuite/wiki/Miscellaneous
